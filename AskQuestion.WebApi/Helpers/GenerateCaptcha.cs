@@ -12,14 +12,14 @@ namespace AskQuestion.WebApi.Helpers
 
             SKBitmap bitmap = new(width, height);
 
-            using (SKPaint textPaint = new() { TextSize = 36 })
+            using (SKPaint textPaint = new() { TextSize = 32 })
             {
                 textPaint.MaskFilter = SKMaskFilter.CreateBlur(SKBlurStyle.Inner, 4);
 
                 using (SKCanvas bitmapCanvas = new(bitmap))
                 {
                     bitmapCanvas.Clear();
-                    bitmapCanvas.DrawText(capcthaText, 0, 35, textPaint);
+                    bitmapCanvas.DrawText(capcthaText, 10, 35, textPaint);
                 }
             }
 
