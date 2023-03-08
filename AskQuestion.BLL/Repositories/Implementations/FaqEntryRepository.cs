@@ -19,7 +19,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
         {
             IEnumerable<FaqEntryDto> faqEntryDtos = await _dataContext.FaqEntries
                 .AsNoTracking()
-                .OrderBy(c => c.Order)
+                .OrderBy(entry => entry.Order)
                 .Select(faqEntry => new FaqEntryDto
                 {
                     Id = faqEntry.Id,
@@ -37,7 +37,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
         {
             FaqEntry? faqEntry = await _dataContext.FaqEntries
                 .AsNoTracking()
-                .FirstOrDefaultAsync(q => q.Id == id);
+                .FirstOrDefaultAsync(entry => entry.Id == id);
 
             if (faqEntry == default)
             {
@@ -75,7 +75,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
         public async Task UpdateAsync(FaqEntryUpdateDto faqEntryUpdateDto)
         {
             FaqEntry? faqEntry = await _dataContext.FaqEntries
-                .FirstOrDefaultAsync(q => q.Id == faqEntryUpdateDto.Id);
+                .FirstOrDefaultAsync(entry => entry.Id == faqEntryUpdateDto.Id);
 
             if (faqEntry == default)
             {
@@ -92,7 +92,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
         public async Task DeleteAsync(Guid id)
         {
             FaqEntry? faqEntry = await _dataContext.FaqEntries
-                .FirstOrDefaultAsync(q => q.Id == id);
+                .FirstOrDefaultAsync(entry => entry.Id == id);
 
             if (faqEntry == default)
             {
@@ -109,7 +109,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
 
             for (int i = 0; i < ids.Length; i++)
             {
-                var entry = entries.FirstOrDefault(c => c.Id == ids[i]);
+                var entry = entries.FirstOrDefault(entry => entry.Id == ids[i]);
 
                 if (entry == null)
                 {

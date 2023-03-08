@@ -20,7 +20,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
         {
             IEnumerable<FaqCategoryDto> faqCategoryDtos = await _dataContext.FaqCategories
                 .AsNoTracking()
-                .OrderBy(c => c.Order)
+                .OrderBy(faqCategory => faqCategory.Order)
                 .Select(faqCategory => new FaqCategoryDto
                 {
                     Id = faqCategory.Id,
@@ -37,9 +37,9 @@ namespace AskQuestion.BLL.Repositories.Implementations
         {
             IEnumerable<FaqCategoryDto> faqCategoryDtos = await _dataContext.FaqCategories
                 .AsNoTracking()
-                .Include(faqCategory => faqCategory.FaqEntries.OrderBy(entry => entry.Order))
+                .Include(faqCategory => faqCategory.FaqEntries)
                 .Where(faqCategory => faqCategory.FaqEntries.Any())
-                .OrderBy(c => c.Order)
+                .OrderBy(faqCategory => faqCategory.Order)
                 .Select(faqCategory => new FaqCategoryDto
                 {
                     Id = faqCategory.Id,
@@ -52,9 +52,12 @@ namespace AskQuestion.BLL.Repositories.Implementations
                         Id = entry.Id,
                         Question = entry.Question,
                         Answer = entry.Answer,
+                        Order = entry.Order,
                         Сreated = entry.Сreated,
                         Updated = entry.Updated
-                    }),
+                    })
+                    .OrderBy(entry => entry.Order)
+                    .ToList(),
                 })
                 .ToListAsync();
 
@@ -66,7 +69,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
             FaqCategory? faqCategory = await _dataContext.FaqCategories
                 .AsNoTracking()
                 .Include(faqCategory => faqCategory.FaqEntries.OrderBy(entry => entry.Order))
-                .FirstOrDefaultAsync(q => q.Id == id);
+                .FirstOrDefaultAsync(faqCategory => faqCategory.Id == id);
 
             if (faqCategory == default)
             {
@@ -85,9 +88,10 @@ namespace AskQuestion.BLL.Repositories.Implementations
                     Id = entry.Id,
                     Question = entry.Question,
                     Answer = entry.Answer,
+                    Order = entry.Order,
                     Сreated = entry.Сreated,
                     Updated = entry.Updated
-                }).ToList(),
+                }),
             };
 
             return faqCategoryDto;
