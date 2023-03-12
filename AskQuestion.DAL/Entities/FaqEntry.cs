@@ -6,8 +6,6 @@
         public string Question { get; set; } = string.Empty;
         public string Answer { get; set; } = string.Empty;
         public int Order { get; set; }
-        public DateTimeOffset Сreated { get; set; }
-        public DateTimeOffset? Updated { get; set; }
 
         #region Навигационные свойства
 
