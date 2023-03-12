@@ -20,6 +20,11 @@ namespace AskQuestion.DAL
         /// </summary>
         public DbSet<FaqEntry> FaqEntries { get; set; } = null!;
 
+        /// <summary>
+        /// Обратная связь.
+        /// </summary>
+        public DbSet<Feedback> Feedback { get; set; } = null!;
+
         public DataContext(DbContextOptions<DataContext> options) : base(options)
 		{
 			if (options is null)
