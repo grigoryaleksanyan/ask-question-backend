@@ -23,9 +23,9 @@ namespace AskQuestion.WebApi.Controllers
         }
 
         /// <summary>
-        /// Получить список всех записей.
+        /// Получить список всей обратной связи.
         /// </summary>
-        /// <response code='200'>Список всех записей.</response>
+        /// <response code='200'>Список всей обратной связи.</response>
         [HttpGet("GetAll"), Authorize(Roles = "Admin")]
         public async Task<ActionResult<IEnumerable<FeedbackViewModel>>> GetAll()
         {
@@ -46,7 +46,7 @@ namespace AskQuestion.WebApi.Controllers
         }
 
         /// <summary>
-		/// Создать запись.
+		/// Создать запись обратной связи.
 		/// </summary>
         /// <param name="feedbackCreateModel">Модель создания обратной связи.</param>
 		/// <response code='200'>Id созданной записи.</response>
@@ -67,7 +67,7 @@ namespace AskQuestion.WebApi.Controllers
         }
 
         /// <summary>
-		/// Удалить запись.
+		/// Удалить запись обратной связи.
 		/// </summary>
 		/// <param name="id">Id записи.</param>
 		/// <response code='200'>Статус операции.</response>
