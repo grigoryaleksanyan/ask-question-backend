@@ -21,13 +21,13 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 .Select(question => new QuestionDto
                 {
                     Id = question.Id,
-                    Author = question.Author,
-                    Speaker = question.Speaker,
                     Text = question.Text,
+                    Author = question.Author,
+                    Area = question.Area,
+                    Speaker = question.Speaker,
                     Likes = question.Likes,
                     Dislikes = question.Dislikes,
                     Views = question.Views,
-                    Zone = question.Zone,
                     Сreated = question.Сreated,
                     Answered = question.Answered
                 })
@@ -50,13 +50,13 @@ namespace AskQuestion.BLL.Repositories.Implementations
             QuestionDto questionDTO = new()
             {
                 Id = question.Id,
-                Author = question.Author,
-                Speaker = question.Speaker,
                 Text = question.Text,
+                Author = question.Author,
+                Area = question.Area,
+                Speaker = question.Speaker,
                 Likes = question.Likes,
                 Dislikes = question.Dislikes,
                 Views = question.Views,
-                Zone = question.Zone,
                 Сreated = question.Сreated,
                 Answered = question.Answered
             };
@@ -68,10 +68,10 @@ namespace AskQuestion.BLL.Repositories.Implementations
         {
             Question question = new()
             {
-                Author = questionCreateDto.Author,
-                Speaker = questionCreateDto.Speaker,
-                Zone = questionCreateDto.Zone,
                 Text = questionCreateDto.Text,
+                Author = questionCreateDto.Author,
+                Area = questionCreateDto.Area,
+                Speaker = questionCreateDto.Speaker,
                 Сreated = DateTimeOffset.UtcNow,
             };
 
@@ -92,10 +92,10 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 throw new InvalidOperationException("Объект не найден");
             }
 
-            question.Author = questionUpdateDto.Author;
-            question.Speaker = questionUpdateDto.Speaker;
-            question.Zone = questionUpdateDto.Zone;
             question.Text = questionUpdateDto.Text;
+            question.Author = questionUpdateDto.Author;
+            question.Area = questionUpdateDto.Area;
+            question.Speaker = questionUpdateDto.Speaker;
 
             await _dataContext.SaveChangesAsync();
         }

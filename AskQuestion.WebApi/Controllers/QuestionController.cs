@@ -50,13 +50,13 @@ namespace AskQuestion.WebApi.Controllers
             IEnumerable<QuestionViewModel> result = questions.Select(question => new QuestionViewModel
             {
                 Id = question.Id,
-                Author = question.Author,
-                Speaker = question.Speaker,
                 Text = question.Text,
+                Author = question.Author,
+                Area = question.Area,
+                Speaker = question.Speaker,
                 Likes = question.Likes,
                 Dislikes = question.Dislikes,
                 Views = question.Views,
-                Zone = question.Zone,
                 Сreated = question.Сreated,
                 Answered = question.Answered
             });
@@ -85,13 +85,13 @@ namespace AskQuestion.WebApi.Controllers
             QuestionViewModel result = new()
             {
                 Id = question.Id,
-                Author = question.Author,
-                Speaker = question.Speaker,
                 Text = question.Text,
+                Author = question.Author,
+                Area = question.Area,
+                Speaker = question.Speaker,
                 Likes = question.Likes,
                 Dislikes = question.Dislikes,
                 Views = question.Views,
-                Zone = question.Zone,
                 Сreated = question.Сreated,
                 Answered = question.Answered
             };
@@ -148,10 +148,10 @@ namespace AskQuestion.WebApi.Controllers
             QuestionUpdateDto questionUpdateDto = new()
             {
                 Id = id,
-                Author = questionUpdateModel.Author,
-                Speaker = questionUpdateModel.Speaker,
-                Zone = questionUpdateModel.Zone,
                 Text = questionUpdateModel.Text,
+                Author = questionUpdateModel.Author,
+                Area = questionUpdateModel.Area,
+                Speaker = questionUpdateModel.Speaker,
             };
 
             await _questionRepository.UpdateAsync(id, questionUpdateDto);

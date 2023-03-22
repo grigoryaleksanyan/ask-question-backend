@@ -1,5 +1,4 @@
 ﻿using AskQuestion.BLL.DTO.FaqCategory;
-using AskQuestion.BLL.DTO.FaqEntry;
 using AskQuestion.BLL.Repositories.Interfaces;
 using AskQuestion.WebApi.Models.Request.FaqCategory;
 using AskQuestion.WebApi.Models.Response.FaqCategory;
@@ -28,7 +27,7 @@ namespace AskQuestion.WebApi.Controllers
         /// Получить список всех категорий.
         /// </summary>
         /// <response code='200'>Список всех категорий.</response>
-        [HttpGet("GetAll")]
+        [HttpGet("GetAll"), Authorize(Roles = "Admin")]
         public async Task<ActionResult<IEnumerable<FaqCategoryViewModel>>> GetAll()
         {
             var faqCategoryDtos = await _faqCategoryRepository.GetAllAsync();
