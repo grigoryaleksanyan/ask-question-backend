@@ -1,4 +1,9 @@
-﻿using AskQuestion.WebApi.Models;
+﻿using AskQuestion.BLL.DTO.User;
+using AskQuestion.BLL.Repositories.Interfaces;
+using AskQuestion.WebApi.Models.Request.User;
+using AskQuestion.WebApi.Models.Response.User;
+using AskQuestion.Core.Constants;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -14,48 +19,64 @@ namespace AskQuestion.WebApi.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        public static User user = new User();
-
+        private readonly IUserRepository _userRepository;
         private readonly IConfiguration _configuration;
 
-        public AuthController(IConfiguration configuration)
+        public AuthController(IConfiguration configuration, IUserRepository userRepository)
         {
             _configuration = configuration;
+            _userRepository = userRepository;
         }
 
-        [HttpPost("Register")]
-        public ActionResult<User> Register(UserDto request)
+        /// <summary>
+        /// Получить данные пользователя.
+        /// </summary>
+        [Authorize(Roles = UserStringRoles.ADMINISTRATORS_AND_SPEAKERS)]
+        [HttpGet("GetUserData")]
+        public ActionResult<UserViewModel> GetUserData()
         {
-            string passwordHash
-                = BCrypt.Net.BCrypt.HashPassword(request.Password);
+            var user = HttpContext.User.Identity;
 
-            user.UserName = request.UserName;
-            user.PasswordHash = passwordHash;
+            var userName = user.Name;
 
-            return Ok(user);
+            return Ok();
         }
 
+        /// <summary>
+        /// Авторизоваться на портале.
+        /// </summary>
+        /// <param name="userAuthModel">Модель авторизации пользователя.</param>
+        /// <response code='200'>Токен авторизации.</response>
+        /// <response code='400'>Ошибка авторизации.</response>
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpPost("Login")]
-        public ActionResult<User> Login(UserDto request)
+        public async Task<ActionResult<UserViewModel>> Login(UserAuthModel userAuthModel)
         {
-            if (user.UserName != request.UserName)
+
+            UserAuthDto userAuthDto = new()
+            {
+                Login = userAuthModel.Login,
+                Password = userAuthModel.Password,
+            };
+
+            var userDto = await _userRepository.AuthorizeUser(userAuthDto);
+
+            if (userDto == default)
             {
                 return BadRequest("Неверный логин или пароль.");
             }
 
-            if (!BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
-            {
-                return BadRequest("Неверный логин или пароль.");
-            }
-
-            string token = CreateToken(user);
+            string token = CreateToken(userDto);
 
             if (token != null)
+            {
                 HttpContext.Response.Cookies.Append(".WebApi", token,
                 new CookieOptions
                 {
                     MaxAge = TimeSpan.FromMinutes(60)
                 });
+            }
 
             HttpContext.Response.Headers.Add("X-Content-Type-Options", "nosniff");
             HttpContext.Response.Headers.Add("X-Xss-Protection", "1");
@@ -64,7 +85,12 @@ namespace AskQuestion.WebApi.Controllers
             return Ok(token);
         }
 
+        /// <summary>
+        /// Выйти из портала.
+        /// </summary>
+        /// <response code='200'>Успешный выход.</response>
         [HttpPut("Logout")]
+        [Authorize(Roles = UserStringRoles.ADMINISTRATORS_AND_SPEAKERS)]
         public IActionResult Logout()
         {
             HttpContext.Response.Cookies.Delete(".WebApi");
@@ -72,12 +98,12 @@ namespace AskQuestion.WebApi.Controllers
             return Ok();
         }
 
-        private string CreateToken(User user)
+        private string CreateToken(UserDto userDto)
         {
             List<Claim> claims = new()
             {
-                new Claim(ClaimTypes.Name, user.UserName),
-                new Claim(ClaimTypes.Role, "Admin"),
+                new Claim(ClaimTypes.Name, userDto.Login),
+                new Claim(ClaimTypes.Role, userDto.UserRoleId.ToString()),
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("Jwt:Token").Value!));
