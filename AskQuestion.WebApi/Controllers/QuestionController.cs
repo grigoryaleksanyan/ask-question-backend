@@ -3,6 +3,7 @@ using AskQuestion.BLL.Repositories;
 using AskQuestion.WebApi.Helpers;
 using AskQuestion.WebApi.Models.Request.Question;
 using AskQuestion.WebApi.Models.Response.Question;
+using AskQuestion.Core.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -135,7 +136,8 @@ namespace AskQuestion.WebApi.Controllers
         /// <response code='404'>Вопрос не найден.</response>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [HttpPut("Update/{id:guid}"), Authorize(Roles = "Admin")]
+        [HttpPut("Update/{id:guid}")]
+        [Authorize(Roles = UserStringRoles.ADMINISTRATORS_ONLY)]
         public async Task<IActionResult> Update(Guid id, QuestionUpdateModel questionUpdateModel)
         {
             var question = await _questionRepository.GetByIdAsync(id);
@@ -167,7 +169,8 @@ namespace AskQuestion.WebApi.Controllers
         /// <response code='404'>Вопрос не найден.</response>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [HttpDelete("Delete/{id:guid}"), Authorize(Roles = "Admin")]
+        [HttpDelete("Delete/{id:guid}")]
+        [Authorize(Roles = UserStringRoles.ADMINISTRATORS_ONLY)]
         public async Task<IActionResult> Delete(Guid id)
         {
             var question = await _questionRepository.GetByIdAsync(id);

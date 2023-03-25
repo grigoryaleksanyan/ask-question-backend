@@ -2,6 +2,7 @@
 using AskQuestion.BLL.Repositories.Interfaces;
 using AskQuestion.WebApi.Models.Request.Area;
 using AskQuestion.WebApi.Models.Response.Area;
+using AskQuestion.Core.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
@@ -48,7 +49,8 @@ namespace AskQuestion.WebApi.Controllers
 		/// </summary>
         /// <param name="areaCreateModel">Модель создания области</param>
 		/// <response code='200'>Id созданной категории.</response>
-        [HttpPost("Create"), Authorize(Roles = "Admin")]
+        [HttpPost("Create")]
+        [Authorize(Roles = UserStringRoles.ADMINISTRATORS_ONLY)]
         public async Task<ActionResult<Guid>> Create(AreaCreateModel areaCreateModel)
         {
             AreaCreateDto areaCreateDto = new()
@@ -70,7 +72,8 @@ namespace AskQuestion.WebApi.Controllers
         /// <response code='404'>Область не найдена.</response>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [HttpPut("Update"), Authorize(Roles = "Admin")]
+        [HttpPut("Update")]
+        [Authorize(Roles = UserStringRoles.ADMINISTRATORS_ONLY)]
         public async Task<IActionResult> Update(AreaUpdateModel areaUpdateModel)
         {
             var areaUpdateDto = new AreaUpdateDto()
@@ -92,7 +95,8 @@ namespace AskQuestion.WebApi.Controllers
         /// <response code='404'>Область не найдена.</response>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [HttpDelete("Delete"), Authorize(Roles = "Admin")]
+        [HttpDelete("Delete")]
+        [Authorize(Roles = UserStringRoles.ADMINISTRATORS_ONLY)]
         public async Task<IActionResult> Delete(Guid id)
         {
             await _areaRepository.DeleteAsync(id);
@@ -107,7 +111,8 @@ namespace AskQuestion.WebApi.Controllers
 		/// <response code='200'>Статус операции.</response>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [HttpPut("SetOrder"), Authorize(Roles = "Admin")]
+        [HttpPut("SetOrder")]
+        [Authorize(Roles = UserStringRoles.ADMINISTRATORS_ONLY)]
         public async Task<IActionResult> SetOrder(Guid[] ids)
         {
             if (ids.Length == 0)

@@ -3,6 +3,7 @@ using AskQuestion.BLL.Repositories.Interfaces;
 using AskQuestion.WebApi.Models.Request.FaqCategory;
 using AskQuestion.WebApi.Models.Response.FaqCategory;
 using AskQuestion.WebApi.Models.Response.FaqEntry;
+using AskQuestion.Core.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -27,7 +28,8 @@ namespace AskQuestion.WebApi.Controllers
         /// Получить список всех категорий.
         /// </summary>
         /// <response code='200'>Список всех категорий.</response>
-        [HttpGet("GetAll"), Authorize(Roles = "Admin")]
+        [HttpGet("GetAll")]
+        [Authorize(Roles = UserStringRoles.ADMINISTRATORS_ONLY)]
         public async Task<ActionResult<IEnumerable<FaqCategoryViewModel>>> GetAll()
         {
             var faqCategoryDtos = await _faqCategoryRepository.GetAllAsync();
@@ -82,6 +84,7 @@ namespace AskQuestion.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpGet("GetById")]
+        [Authorize(Roles = UserStringRoles.ADMINISTRATORS_ONLY)]
         public async Task<ActionResult<FaqCategoryWithEntriesViewModel>> GetById(Guid id)
         {
             var faqCategoryDto = await _faqCategoryRepository.GetByIdAsync(id);
@@ -116,7 +119,8 @@ namespace AskQuestion.WebApi.Controllers
 		/// </summary>
         /// <param name="faqCategoryCreateModel">Модель создания категории</param>
 		/// <response code='200'>Id созданной категории.</response>
-        [HttpPost("Create"), Authorize(Roles = "Admin")]
+        [HttpPost("Create")]
+        [Authorize(Roles = UserStringRoles.ADMINISTRATORS_ONLY)]
         public async Task<ActionResult<Guid>> Create(FaqCategoryCreateModel faqCategoryCreateModel)
         {
             FaqCategoryCreateDto faqCategoryCreateDto = new()
@@ -138,7 +142,8 @@ namespace AskQuestion.WebApi.Controllers
         /// <response code='404'>Категория не найдена.</response>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [HttpPut("Update"), Authorize(Roles = "Admin")]
+        [HttpPut("Update")]
+        [Authorize(Roles = UserStringRoles.ADMINISTRATORS_ONLY)]
         public async Task<IActionResult> Update(FaqCategoryUpdateModel faqCategoryUpdateModel)
         {
             var faqCategoryUpdateDto = new FaqCategoryUpdateDto()
@@ -160,7 +165,8 @@ namespace AskQuestion.WebApi.Controllers
         /// <response code='404'>Категория не найдена.</response>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [HttpDelete("Delete"), Authorize(Roles = "Admin")]
+        [HttpDelete("Delete")]
+        [Authorize(Roles = UserStringRoles.ADMINISTRATORS_ONLY)]
         public async Task<IActionResult> Delete(Guid id)
         {
             await _faqCategoryRepository.DeleteAsync(id);
@@ -175,7 +181,8 @@ namespace AskQuestion.WebApi.Controllers
 		/// <response code='200'>Статус операции.</response>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [HttpPut("SetOrder"), Authorize(Roles = "Admin")]
+        [HttpPut("SetOrder")]
+        [Authorize(Roles = UserStringRoles.ADMINISTRATORS_ONLY)]
         public async Task<IActionResult> SetOrder(Guid[] ids)
         {
             if (ids.Length == 0)

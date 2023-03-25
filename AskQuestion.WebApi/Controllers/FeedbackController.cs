@@ -2,6 +2,7 @@
 using AskQuestion.BLL.Repositories.Interfaces;
 using AskQuestion.WebApi.Models.Request.Feedback;
 using AskQuestion.WebApi.Models.Response.Feedback;
+using AskQuestion.Core.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -26,7 +27,8 @@ namespace AskQuestion.WebApi.Controllers
         /// Получить список всей обратной связи.
         /// </summary>
         /// <response code='200'>Список всей обратной связи.</response>
-        [HttpGet("GetAll"), Authorize(Roles = "Admin")]
+        [HttpGet("GetAll")]
+        [Authorize(Roles = UserStringRoles.ADMINISTRATORS_ONLY)]
         public async Task<ActionResult<IEnumerable<FeedbackViewModel>>> GetAll()
         {
             var feedbackDtos = await _feedbackRepository.GetAllAsync();
@@ -74,7 +76,8 @@ namespace AskQuestion.WebApi.Controllers
         /// <response code='404'>Запись не найдена.</response>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [HttpDelete("Delete"), Authorize(Roles = "Admin")]
+        [HttpDelete("Delete")]
+        [Authorize(Roles = UserStringRoles.ADMINISTRATORS_ONLY)]
         public async Task<IActionResult> Delete(Guid id)
         {
             await _feedbackRepository.DeleteAsync(id);

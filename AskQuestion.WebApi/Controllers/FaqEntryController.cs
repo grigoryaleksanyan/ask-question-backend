@@ -2,6 +2,7 @@
 using AskQuestion.BLL.Repositories.Interfaces;
 using AskQuestion.WebApi.Models.Request.FaqEntry;
 using AskQuestion.WebApi.Models.Response.FaqEntry;
+using AskQuestion.Core.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
@@ -14,7 +15,7 @@ namespace AskQuestion.WebApi.Controllers
     [Route("api/FaqEntry")]
     [ApiController]
     [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = UserStringRoles.ADMINISTRATORS_ONLY)]
     public class FaqEntryController : ControllerBase
     {
         private readonly IFaqEntryRepository _faqEntryRepository;
