@@ -25,6 +25,11 @@ namespace AskQuestion.DAL
         /// </summary>
         public DbSet<Feedback> Feedback { get; set; } = null!;
 
+        /// <summary>
+        /// Области.
+        /// </summary>
+        public DbSet<Area> Areas { get; set; } = null!;
+
         public DataContext(DbContextOptions<DataContext> options) : base(options)
 		{
 			if (options is null)
