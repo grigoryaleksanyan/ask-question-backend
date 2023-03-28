@@ -1,8 +1,8 @@
 ﻿using AskQuestion.BLL.DTO.User;
 using AskQuestion.BLL.Repositories.Interfaces;
+using AskQuestion.Core.Constants;
 using AskQuestion.WebApi.Models.Request.User;
 using AskQuestion.WebApi.Models.Response.User;
-using AskQuestion.Core.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -26,20 +26,6 @@ namespace AskQuestion.WebApi.Controllers
         {
             _configuration = configuration;
             _userRepository = userRepository;
-        }
-
-        /// <summary>
-        /// Получить данные пользователя.
-        /// </summary>
-        [Authorize(Roles = UserStringRoles.ADMINISTRATORS_AND_SPEAKERS)]
-        [HttpGet("GetUserData")]
-        public ActionResult<UserViewModel> GetUserData()
-        {
-            var user = HttpContext.User.Identity;
-
-            var userName = user.Name;
-
-            return Ok();
         }
 
         /// <summary>
@@ -67,6 +53,15 @@ namespace AskQuestion.WebApi.Controllers
                 return BadRequest("Неверный логин или пароль.");
             }
 
+            UserViewModel userViewModel = new()
+            {
+                Id = userDto.Id,
+                Login = userDto.Login,
+                UserRoleId = userDto.UserRoleId,
+                Сreated = userDto.Сreated,
+                Updated = userDto.Updated,
+            };
+
             string token = CreateToken(userDto);
 
             if (token != null)
@@ -82,7 +77,7 @@ namespace AskQuestion.WebApi.Controllers
             HttpContext.Response.Headers.Add("X-Xss-Protection", "1");
             HttpContext.Response.Headers.Add("X-Frame-Options", "DENY");
 
-            return Ok(token);
+            return Ok(userViewModel);
         }
 
         /// <summary>
@@ -103,6 +98,7 @@ namespace AskQuestion.WebApi.Controllers
             List<Claim> claims = new()
             {
                 new Claim(ClaimTypes.Name, userDto.Login),
+                new Claim(ClaimTypes.NameIdentifier, userDto.Id.ToString()),
                 new Claim(ClaimTypes.Role, userDto.UserRoleId.ToString()),
             };
 

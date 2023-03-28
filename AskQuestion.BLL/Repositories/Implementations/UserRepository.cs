@@ -35,8 +35,31 @@ namespace AskQuestion.BLL.Repositories.Implementations
             {
                 Id = user.Id,
                 Login = user.Login,
-                UserRoleId = (AskQuestion.Core.Enums.UserRole)user.UserRoleId,
+                UserRoleId = (Core.Enums.UserRole)user.UserRoleId,
                 Сreated = user.Сreated,
+            };
+
+            return userDto;
+        }
+
+        public async Task<UserDto?> GetById(Guid id)
+        {
+            User? user = await _dataContext.Users
+                .AsNoTracking()
+                .FirstOrDefaultAsync(user => user.Id == id);
+
+            if (user == null)
+            {
+                return null;
+            }
+
+            UserDto userDto = new()
+            {
+                Id = user.Id,
+                Login = user.Login,
+                UserRoleId = (Core.Enums.UserRole)user.UserRoleId,
+                Сreated = user.Сreated,
+                Updated = user.Updated,
             };
 
             return userDto;
