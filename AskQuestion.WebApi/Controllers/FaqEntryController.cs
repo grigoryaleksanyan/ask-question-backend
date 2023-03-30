@@ -1,8 +1,8 @@
 ﻿using AskQuestion.BLL.DTO.FaqEntry;
 using AskQuestion.BLL.Repositories.Interfaces;
+using AskQuestion.Core.Constants;
 using AskQuestion.WebApi.Models.Request.FaqEntry;
 using AskQuestion.WebApi.Models.Response.FaqEntry;
-using AskQuestion.Core.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;

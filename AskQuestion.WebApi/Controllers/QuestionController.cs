@@ -1,9 +1,9 @@
 ﻿using AskQuestion.BLL.DTO.Question;
 using AskQuestion.BLL.Repositories;
+using AskQuestion.Core.Constants;
 using AskQuestion.WebApi.Helpers;
 using AskQuestion.WebApi.Models.Request.Question;
 using AskQuestion.WebApi.Models.Response.Question;
-using AskQuestion.Core.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

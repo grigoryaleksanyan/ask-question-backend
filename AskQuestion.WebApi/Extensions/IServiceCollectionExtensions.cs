@@ -1,11 +1,11 @@
-﻿using AskQuestion.BLL.Repositories.Implementations;
-using AskQuestion.BLL.Repositories;
+﻿using AskQuestion.BLL.Repositories;
+using AskQuestion.BLL.Repositories.Implementations;
+using AskQuestion.BLL.Repositories.Interfaces;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
 using System.Reflection;
 using System.Text;
-using AskQuestion.BLL.Repositories.Interfaces;
 
 namespace AskQuestion.WebApi.Extensions
 {

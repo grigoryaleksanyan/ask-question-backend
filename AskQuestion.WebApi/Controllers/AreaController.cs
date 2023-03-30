@@ -1,8 +1,8 @@
 ﻿using AskQuestion.BLL.DTO.Area;
 using AskQuestion.BLL.Repositories.Interfaces;
+using AskQuestion.Core.Constants;
 using AskQuestion.WebApi.Models.Request.Area;
 using AskQuestion.WebApi.Models.Response.Area;
-using AskQuestion.Core.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;

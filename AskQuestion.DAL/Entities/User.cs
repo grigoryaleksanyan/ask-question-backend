@@ -18,7 +18,7 @@
 		public int UserRoleId { get; set; }
 
         #region Навигационные свойства
-        
+
         public UserRole UserRole { get; set; }
 
         #endregion

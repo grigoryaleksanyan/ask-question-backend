@@ -1,9 +1,9 @@
 ﻿using AskQuestion.BLL.DTO.FaqCategory;
 using AskQuestion.BLL.Repositories.Interfaces;
+using AskQuestion.Core.Constants;
 using AskQuestion.WebApi.Models.Request.FaqCategory;
 using AskQuestion.WebApi.Models.Response.FaqCategory;
 using AskQuestion.WebApi.Models.Response.FaqEntry;
-using AskQuestion.Core.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
