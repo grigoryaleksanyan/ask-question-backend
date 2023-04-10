@@ -4,7 +4,8 @@ namespace AskQuestion.BLL.Repositories.Interfaces
 {
     public interface IUserRepository
     {
-       Task<UserDto?> AuthorizeUser(UserAuthDto userAuthDto);
-       Task<UserDto?> GetById(Guid id);
+        Task<UserDto?> AuthorizeUser(UserAuthDto userAuthDto);
+        Task<UserDto?> GetById(Guid id);
+        Task ChangePassword(UserPasswordUpdateDto userPasswordUpdateDto);
     }
 }

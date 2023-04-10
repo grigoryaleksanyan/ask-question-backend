@@ -1,5 +1,7 @@
-﻿using AskQuestion.BLL.Repositories.Interfaces;
+﻿using AskQuestion.BLL.DTO.User;
+using AskQuestion.BLL.Repositories.Interfaces;
 using AskQuestion.Core.Constants;
+using AskQuestion.WebApi.Models.Request.User;
 using AskQuestion.WebApi.Models.Response.User;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -61,6 +63,42 @@ namespace AskQuestion.WebApi.Controllers
             };
 
             return Ok(userViewModel);
+        }
+
+        /// <summary>
+        /// Изменить пароль.
+        /// </summary>
+        /// <param name="userPasswordUpdateModel">Модель изменения пароля.</param>
+        [HttpPut("ChangePassword")]
+        [Authorize(Roles = UserStringRoles.ADMINISTRATORS_AND_SPEAKERS)]
+        public async Task<ActionResult> ChangePassword(UserPasswordUpdateModel userPasswordUpdateModel)
+        {
+            var claimsIdentity = HttpContext.User.Identity as ClaimsIdentity;
+
+            if (claimsIdentity == default)
+            {
+                return BadRequest("Не удалось выполнить идентификацию пользователя");
+            }
+
+            string? idString = claimsIdentity.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+            if (idString == default)
+            {
+                return BadRequest("Не удалось выполнить идентификацию пользователя");
+            }
+
+            Guid id = Guid.Parse(idString);
+
+            UserPasswordUpdateDto userPasswordUpdateDto = new()
+            {
+                Id = id,
+                Password = userPasswordUpdateModel.Password,
+                NewPassword = userPasswordUpdateModel.NewPassword,
+            };
+
+            await _userRepository.ChangePassword(userPasswordUpdateDto);
+
+            return Ok();
         }
     }
 }

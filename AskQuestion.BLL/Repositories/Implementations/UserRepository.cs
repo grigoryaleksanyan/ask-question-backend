@@ -64,5 +64,26 @@ namespace AskQuestion.BLL.Repositories.Implementations
 
             return userDto;
         }
+
+        public async Task ChangePassword(UserPasswordUpdateDto userPasswordUpdateDto)
+        {
+            User? user = await _dataContext.Users
+                .FirstOrDefaultAsync(user => user.Id == userPasswordUpdateDto.Id);
+
+            if (user == null)
+            {
+                throw new InvalidOperationException("Ошибка изменения пароля");
+            }
+
+            if (!BCrypt.Net.BCrypt.Verify(userPasswordUpdateDto.Password, user.Password))
+            {
+                throw new InvalidOperationException("Ошибка изменения пароля");
+            }
+
+            user.Password = BCrypt.Net.BCrypt.HashPassword(userPasswordUpdateDto.NewPassword);
+            user.Updated = DateTimeOffset.UtcNow;
+
+            await _dataContext.SaveChangesAsync();
+        }
     }
 }
