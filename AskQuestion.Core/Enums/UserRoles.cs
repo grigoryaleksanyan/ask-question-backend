@@ -3,7 +3,7 @@
     /// <summary>
     /// Роль пользователя.
     /// </summary>
-    public enum UserRole
+    public enum UserRoles
     {
         /// <summary>
         /// Администратор.

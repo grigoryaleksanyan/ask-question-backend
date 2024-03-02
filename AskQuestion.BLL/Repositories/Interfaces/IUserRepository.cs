@@ -6,6 +6,7 @@ namespace AskQuestion.BLL.Repositories.Interfaces
     {
         Task<UserDto?> AuthorizeUser(UserAuthDto userAuthDto);
         Task<UserDto?> GetById(Guid id);
+        Task<UserDto?> CreateSpeaker(UserCreateDto userCreateDto);
         Task ChangePassword(UserPasswordUpdateDto userPasswordUpdateDto);
     }
 }

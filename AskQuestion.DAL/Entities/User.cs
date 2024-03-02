@@ -20,6 +20,7 @@
         #region Навигационные свойства
 
         public UserRole UserRole { get; set; }
+        public UserDetails UserDetails { get; set; }
 
         #endregion
     }

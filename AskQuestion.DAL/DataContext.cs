@@ -11,6 +11,11 @@ namespace AskQuestion.DAL
         public DbSet<User> Users { get; set; }
 
         /// <summary>
+        /// Информация о пользователе.
+        /// </summary>
+        public DbSet<UserDetails> UserDetails { get; set; }
+
+        /// <summary>
         /// Роли пользователей.
         /// </summary>
         public DbSet<UserRole> UserRoles { get; set; }
@@ -42,10 +47,7 @@ namespace AskQuestion.DAL
 
         public DataContext(DbContextOptions<DataContext> options) : base(options)
         {
-            if (options is null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
+            ArgumentNullException.ThrowIfNull(options);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -56,8 +58,8 @@ namespace AskQuestion.DAL
             (
                 new List<UserRole>
                 {
-                    new UserRole { UserRoleId = 1, Name = "Administrator" },
-                    new UserRole { UserRoleId = 2, Name = "Speaker" },
+                    new() { UserRoleId = 1, Name = "Administrator" },
+                    new() { UserRoleId = 2, Name = "Speaker" },
                 }
             );
 
@@ -67,7 +69,7 @@ namespace AskQuestion.DAL
             (
                 new List<User>
                 {
-                    new User { Id = Guid.NewGuid(), Login = "Admin", UserRoleId = 1, Password = BCrypt.Net.BCrypt.HashPassword("Admin"), Сreated = DateTimeOffset.UtcNow },
+                    new() { Id = Guid.NewGuid(), Login = "Admin", UserRoleId = 1, Password = BCrypt.Net.BCrypt.HashPassword("Admin"), Сreated = DateTimeOffset.UtcNow },
                 }
             );
         }

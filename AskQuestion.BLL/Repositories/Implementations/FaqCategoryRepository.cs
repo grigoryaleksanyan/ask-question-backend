@@ -7,18 +7,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AskQuestion.BLL.Repositories.Implementations
 {
-    public class FaqCategoryRepository : IFaqCategoryRepository
+    public class FaqCategoryRepository(DataContext dataContext) : IFaqCategoryRepository
     {
-        private readonly DataContext _dataContext;
-
-        public FaqCategoryRepository(DataContext dataContext)
-        {
-            _dataContext = dataContext;
-        }
-
         public async Task<IEnumerable<FaqCategoryDto>> GetAllAsync()
         {
-            IEnumerable<FaqCategoryDto> faqCategoryDtos = await _dataContext.FaqCategories
+            IEnumerable<FaqCategoryDto> faqCategoryDtos = await dataContext.FaqCategories
                 .AsNoTracking()
                 .OrderBy(faqCategory => faqCategory.Order)
                 .Select(faqCategory => new FaqCategoryDto
@@ -35,7 +28,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
 
         public async Task<IEnumerable<FaqCategoryDto>> GetAllWithEntriesAsync()
         {
-            IEnumerable<FaqCategoryDto> faqCategoryDtos = await _dataContext.FaqCategories
+            IEnumerable<FaqCategoryDto> faqCategoryDtos = await dataContext.FaqCategories
                 .AsNoTracking()
                 .Include(faqCategory => faqCategory.FaqEntries)
                 .Where(faqCategory => faqCategory.FaqEntries.Any())
@@ -66,7 +59,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
 
         public async Task<FaqCategoryDto?> GetByIdAsync(Guid id)
         {
-            FaqCategory? faqCategory = await _dataContext.FaqCategories
+            FaqCategory? faqCategory = await dataContext.FaqCategories
                 .AsNoTracking()
                 .Include(faqCategory => faqCategory.FaqEntries.OrderBy(entry => entry.Order))
                 .FirstOrDefaultAsync(faqCategory => faqCategory.Id == id);
@@ -106,15 +99,15 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 Сreated = DateTimeOffset.UtcNow,
             };
 
-            await _dataContext.AddAsync(faqCategory);
-            await _dataContext.SaveChangesAsync();
+            await dataContext.AddAsync(faqCategory);
+            await dataContext.SaveChangesAsync();
 
             return faqCategory.Id;
         }
 
         public async Task UpdateAsync(FaqCategoryUpdateDto faqCategoryUpdateDto)
         {
-            FaqCategory? faqCategory = await _dataContext.FaqCategories
+            FaqCategory? faqCategory = await dataContext.FaqCategories
                 .FirstOrDefaultAsync(q => q.Id == faqCategoryUpdateDto.Id);
 
             if (faqCategory == default)
@@ -125,12 +118,12 @@ namespace AskQuestion.BLL.Repositories.Implementations
             faqCategory.Name = faqCategoryUpdateDto.Name;
             faqCategory.Updated = DateTimeOffset.UtcNow;
 
-            await _dataContext.SaveChangesAsync();
+            await dataContext.SaveChangesAsync();
         }
 
         public async Task DeleteAsync(Guid id)
         {
-            FaqCategory? faqCategory = await _dataContext.FaqCategories
+            FaqCategory? faqCategory = await dataContext.FaqCategories
                 .FirstOrDefaultAsync(q => q.Id == id);
 
             if (faqCategory == default)
@@ -138,17 +131,17 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 throw new InvalidOperationException("Объект не найден");
             }
 
-            _dataContext.Remove(faqCategory);
-            await _dataContext.SaveChangesAsync();
+            dataContext.Remove(faqCategory);
+            await dataContext.SaveChangesAsync();
         }
 
         public async Task SetOrderAsync(Guid[] ids)
         {
-            var categories = await _dataContext.FaqCategories.ToListAsync();
+            var categories = await dataContext.FaqCategories.ToListAsync();
 
             for (int i = 0; i < ids.Length; i++)
             {
-                var category = categories.FirstOrDefault(c => c.Id == ids[i]);
+                var category = categories.Find(c => c.Id == ids[i]);
 
                 if (category == null)
                 {
@@ -158,7 +151,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 category.Order = i;
             }
 
-            await _dataContext.SaveChangesAsync();
+            await dataContext.SaveChangesAsync();
         }
     }
 }

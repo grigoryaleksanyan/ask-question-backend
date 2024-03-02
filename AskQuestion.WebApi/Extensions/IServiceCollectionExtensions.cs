@@ -1,11 +1,10 @@
 ﻿using AskQuestion.BLL.Repositories;
 using AskQuestion.BLL.Repositories.Implementations;
 using AskQuestion.BLL.Repositories.Interfaces;
-using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
 using System.Reflection;
-using System.Text;
 
 namespace AskQuestion.WebApi.Extensions
 {
@@ -21,18 +20,16 @@ namespace AskQuestion.WebApi.Extensions
         /// <param name="configuration">Конфиги</param>
         public static void ConfigureAuthentication(this IServiceCollection serviceCollection, IConfiguration configuration)
         {
-            serviceCollection.AddAuthentication().AddJwtBearer(options =>
-            {
-                options.TokenValidationParameters = new TokenValidationParameters
+            serviceCollection.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(options =>
                 {
-                    ValidateAudience = false,
-                    ValidateIssuer = false,
-                    ValidateLifetime = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration.GetSection("Jwt:Token").Value!)),
-                    ValidateIssuerSigningKey = true,
-                    ClockSkew = TimeSpan.Zero
-                };
-            });
+                    options.Cookie.Name = ".WebApi";
+                    options.Events.OnRedirectToLogin = (context) =>
+                    {
+                        context.Response.StatusCode = 401;
+                        return Task.CompletedTask;
+                    };
+                });
         }
 
         public static void ConfigureSession(this IServiceCollection services)
@@ -59,14 +56,6 @@ namespace AskQuestion.WebApi.Extensions
 
                 options.OperationFilter<SecurityRequirementsOperationFilter>();
                 options.OperationFilter<AppendAuthorizeToSummaryOperationFilter>();
-
-                options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
-                {
-                    In = ParameterLocation.Header,
-                    Name = "Authorization",
-                    Description = "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter 'Bearer' [space] and then your token in the text input below.",
-                    Type = SecuritySchemeType.ApiKey,
-                });
             });
         }
 

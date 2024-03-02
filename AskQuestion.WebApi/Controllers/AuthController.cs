@@ -3,12 +3,11 @@ using AskQuestion.BLL.Repositories.Interfaces;
 using AskQuestion.Core.Constants;
 using AskQuestion.WebApi.Models.Request.User;
 using AskQuestion.WebApi.Models.Response.User;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
 
 namespace AskQuestion.WebApi.Controllers
 {
@@ -20,11 +19,9 @@ namespace AskQuestion.WebApi.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IUserRepository _userRepository;
-        private readonly IConfiguration _configuration;
 
-        public AuthController(IConfiguration configuration, IUserRepository userRepository)
+        public AuthController( IUserRepository userRepository)
         {
-            _configuration = configuration;
             _userRepository = userRepository;
         }
 
@@ -62,20 +59,30 @@ namespace AskQuestion.WebApi.Controllers
                 Updated = userDto.Updated,
             };
 
-            string token = CreateToken(userDto);
-
-            if (token != null)
+            List<Claim> claims = new()
             {
-                HttpContext.Response.Cookies.Append(".WebApi", token,
-                new CookieOptions
-                {
-                    MaxAge = TimeSpan.FromMinutes(60)
-                });
-            }
+                new Claim(ClaimTypes.Name, userDto.Login),
+                new Claim(ClaimTypes.NameIdentifier, userDto.Id.ToString()),
+                new Claim(ClaimTypes.Role, userDto.UserRoleId.ToString()),
+            };
 
-            HttpContext.Response.Headers.Add("X-Content-Type-Options", "nosniff");
-            HttpContext.Response.Headers.Add("X-Xss-Protection", "1");
-            HttpContext.Response.Headers.Add("X-Frame-Options", "DENY");
+
+            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+
+            var authProperties = new AuthenticationProperties
+            {
+                AllowRefresh = true,
+                IsPersistent = true,
+                ExpiresUtc = DateTimeOffset.UtcNow.AddDays(1),
+            };
+
+            var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
+
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, claimsPrincipal, authProperties);
+
+            HttpContext.Response.Headers.Append("X-Content-Type-Options", "nosniff");
+            HttpContext.Response.Headers.Append("X-Xss-Protection", "1");
+            HttpContext.Response.Headers.Append("X-Frame-Options", "DENY");
 
             return Ok(userViewModel);
         }
@@ -86,35 +93,11 @@ namespace AskQuestion.WebApi.Controllers
         /// <response code='200'>Успешный выход.</response>
         [HttpPut("Logout")]
         [Authorize(Roles = UserStringRoles.ADMINISTRATORS_AND_SPEAKERS)]
-        public IActionResult Logout()
+        public async Task<IActionResult> Logout()
         {
-            HttpContext.Response.Cookies.Delete(".WebApi");
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 
             return Ok();
-        }
-
-        private string CreateToken(UserDto userDto)
-        {
-            List<Claim> claims = new()
-            {
-                new Claim(ClaimTypes.Name, userDto.Login),
-                new Claim(ClaimTypes.NameIdentifier, userDto.Id.ToString()),
-                new Claim(ClaimTypes.Role, userDto.UserRoleId.ToString()),
-            };
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("Jwt:Token").Value!));
-
-            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
-
-            var token = new JwtSecurityToken(
-                    claims: claims,
-                    expires: DateTime.Now.AddHours(1),
-                    signingCredentials: credentials
-                );
-
-            var jwt = new JwtSecurityTokenHandler().WriteToken(token);
-
-            return jwt;
         }
     }
 }

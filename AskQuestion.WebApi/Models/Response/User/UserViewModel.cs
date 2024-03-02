@@ -6,7 +6,8 @@ namespace AskQuestion.WebApi.Models.Response.User
     {
         public Guid Id { get; set; }
         public string Login { get; set; } = null!;
-        public UserRole UserRoleId { get; set; }
+        public UserRoles UserRoleId { get; set; }
+        public UserDetailsViewModel? UserDetails { get; set; }
         public DateTimeOffset Сreated { get; set; }
         public DateTimeOffset? Updated { get; set; }
     }

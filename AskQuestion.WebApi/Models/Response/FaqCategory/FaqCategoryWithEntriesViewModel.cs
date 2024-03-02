@@ -13,6 +13,6 @@ namespace AskQuestion.WebApi.Models.Response.FaqCategory
         public DateTimeOffset Сreated { get; set; }
         public DateTimeOffset? Updated { get; set; }
 
-        public IEnumerable<FaqEntryViewModel> Entries { get; set; }
+        public IEnumerable<FaqEntryViewModel> Entries { get; set; } = Enumerable.Empty<FaqEntryViewModel>();
     }
 }

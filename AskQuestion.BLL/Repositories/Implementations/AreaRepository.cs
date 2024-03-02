@@ -6,18 +6,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AskQuestion.BLL.Repositories.Implementations
 {
-    public class AreaRepository : IAreaRepository
+    public class AreaRepository(DataContext dataContext) : IAreaRepository
     {
-        private readonly DataContext _dataContext;
-
-        public AreaRepository(DataContext dataContext)
-        {
-            _dataContext = dataContext;
-        }
-
         public async Task<IEnumerable<AreaDto>> GetAllAsync()
         {
-            IEnumerable<AreaDto> areaDtos = await _dataContext.Areas
+            IEnumerable<AreaDto> areaDtos = await dataContext.Areas
                 .AsNoTracking()
                 .OrderBy(area => area.Order)
                 .Select(area => new AreaDto
@@ -41,15 +34,15 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 Сreated = DateTimeOffset.UtcNow,
             };
 
-            await _dataContext.AddAsync(area);
-            await _dataContext.SaveChangesAsync();
+            await dataContext.AddAsync(area);
+            await dataContext.SaveChangesAsync();
 
             return area.Id;
         }
 
         public async Task UpdateAsync(AreaUpdateDto areaUpdateDto)
         {
-            Area? area = await _dataContext.Areas
+            Area? area = await dataContext.Areas
                 .FirstOrDefaultAsync(q => q.Id == areaUpdateDto.Id);
 
             if (area == default)
@@ -60,12 +53,12 @@ namespace AskQuestion.BLL.Repositories.Implementations
             area.Title = areaUpdateDto.Title;
             area.Updated = DateTimeOffset.UtcNow;
 
-            await _dataContext.SaveChangesAsync();
+            await dataContext.SaveChangesAsync();
         }
 
         public async Task DeleteAsync(Guid id)
         {
-            Area? area = await _dataContext.Areas
+            Area? area = await dataContext.Areas
                 .FirstOrDefaultAsync(q => q.Id == id);
 
             if (area == default)
@@ -73,17 +66,17 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 throw new InvalidOperationException("Объект не найден");
             }
 
-            _dataContext.Remove(area);
-            await _dataContext.SaveChangesAsync();
+            dataContext.Remove(area);
+            await dataContext.SaveChangesAsync();
         }
 
         public async Task SetOrderAsync(Guid[] ids)
         {
-            var areas = await _dataContext.Areas.ToListAsync();
+            var areas = await dataContext.Areas.ToListAsync();
 
             for (int i = 0; i < ids.Length; i++)
             {
-                var area = areas.FirstOrDefault(c => c.Id == ids[i]);
+                var area = areas.Find(c => c.Id == ids[i]);
 
                 if (area == null)
                 {
@@ -93,7 +86,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 area.Order = i;
             }
 
-            await _dataContext.SaveChangesAsync();
+            await dataContext.SaveChangesAsync();
         }
     }
 }

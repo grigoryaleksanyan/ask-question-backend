@@ -5,18 +5,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AskQuestion.BLL.Repositories.Implementations
 {
-    public class QuestionRepository : IQuestionRepository
+    public class QuestionRepository(DataContext dataContext) : IQuestionRepository
     {
-        private readonly DataContext _dataContext;
-
-        public QuestionRepository(DataContext dataContext)
-        {
-            _dataContext = dataContext ?? throw new ArgumentNullException(nameof(dataContext));
-        }
-
         public async Task<IEnumerable<QuestionDto>> GetAllAsync()
         {
-            IEnumerable<QuestionDto> questions = await _dataContext.Questions
+            IEnumerable<QuestionDto> questions = await dataContext.Questions
                 .AsNoTracking()
                 .Select(question => new QuestionDto
                 {
@@ -38,7 +31,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
 
         public async Task<QuestionDto?> GetByIdAsync(Guid id)
         {
-            Question? question = await _dataContext.Questions
+            Question? question = await dataContext.Questions
                 .AsNoTracking()
                 .FirstOrDefaultAsync(q => q.Id == id);
 
@@ -75,15 +68,15 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 Сreated = DateTimeOffset.UtcNow,
             };
 
-            await _dataContext.AddAsync(question);
-            await _dataContext.SaveChangesAsync();
+            await dataContext.AddAsync(question);
+            await dataContext.SaveChangesAsync();
 
             return question.Id;
         }
 
         public async Task UpdateAsync(Guid id, QuestionUpdateDto questionUpdateDto)
         {
-            Question? question = await _dataContext.Questions
+            Question? question = await dataContext.Questions
                 .AsNoTracking()
                 .FirstOrDefaultAsync(q => q.Id == id);
 
@@ -97,12 +90,12 @@ namespace AskQuestion.BLL.Repositories.Implementations
             question.Area = questionUpdateDto.Area;
             question.Speaker = questionUpdateDto.Speaker;
 
-            await _dataContext.SaveChangesAsync();
+            await dataContext.SaveChangesAsync();
         }
 
         public async Task DeleteAsync(Guid id)
         {
-            Question? question = await _dataContext.Questions
+            Question? question = await dataContext.Questions
                 .AsNoTracking()
                 .FirstOrDefaultAsync(q => q.Id == id);
 
@@ -111,8 +104,8 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 throw new InvalidOperationException("Объект не найден");
             }
 
-            _dataContext.Remove(question);
-            await _dataContext.SaveChangesAsync();
+            dataContext.Remove(question);
+            await dataContext.SaveChangesAsync();
         }
     }
 }

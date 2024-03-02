@@ -6,18 +6,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AskQuestion.BLL.Repositories.Implementations
 {
-    public class FeedbackRepository : IFeedbackRepository
+    public class FeedbackRepository(DataContext dataContext) : IFeedbackRepository
     {
-        private readonly DataContext _dataContext;
-
-        public FeedbackRepository(DataContext dataContext)
-        {
-            _dataContext = dataContext;
-        }
-
         public async Task<IEnumerable<FeedbackDto>> GetAllAsync()
         {
-            IEnumerable<FeedbackDto> feedbackDtos = await _dataContext.Feedback
+            IEnumerable<FeedbackDto> feedbackDtos = await dataContext.Feedback
                .AsNoTracking()
                .OrderBy(feedback => feedback.Сreated)
                .Select(feedback => new FeedbackDto
@@ -45,15 +38,15 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 Сreated = DateTimeOffset.UtcNow,
             };
 
-            await _dataContext.AddAsync(feedback);
-            await _dataContext.SaveChangesAsync();
+            await dataContext.AddAsync(feedback);
+            await dataContext.SaveChangesAsync();
 
             return feedback.Id;
         }
 
         public async Task DeleteAsync(Guid id)
         {
-            Feedback? feedback = await _dataContext.Feedback
+            Feedback? feedback = await dataContext.Feedback
                 .FirstOrDefaultAsync(q => q.Id == id);
 
             if (feedback == default)
@@ -61,8 +54,8 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 throw new InvalidOperationException("Объект не найден");
             }
 
-            _dataContext.Remove(feedback);
-            await _dataContext.SaveChangesAsync();
+            dataContext.Remove(feedback);
+            await dataContext.SaveChangesAsync();
         }
     }
 }

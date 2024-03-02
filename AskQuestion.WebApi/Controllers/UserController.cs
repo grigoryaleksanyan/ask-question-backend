@@ -53,11 +53,59 @@ namespace AskQuestion.WebApi.Controllers
                 return NotFound("Пользователь не найден");
             }
 
+            UserViewModel userViewModel = new UserViewModel()
+            {
+                Id = userDto.Id,
+                Login = userDto.Login,
+                UserRoleId = userDto.UserRoleId,
+                UserDetails = userDto.UserDetails is not null ? new UserDetailsViewModel()
+                {
+                    Id = userDto.UserDetails.Id,
+                    FullName = userDto.UserDetails.FullName,
+                    Email = userDto.UserDetails.Email,
+                    AdditionalInfo = userDto.UserDetails.AdditionalInfo,
+                } : null,
+                Сreated = userDto.Сreated,
+                Updated = userDto.Updated,
+            };
+
+            return Ok(userViewModel);
+        }
+
+        /// <summary>
+        /// Создать спикера.
+        /// </summary>
+        /// <param name="speakerCreateModel">Модель создания спикера.</param>
+        [HttpPost("CreateSpeaker")]
+        [Authorize(Roles = UserStringRoles.ADMINISTRATORS_ONLY)]
+        public async Task<ActionResult<UserViewModel>> CreateSpeaker(SpeakerCreateModel speakerCreateModel)
+        {
+            UserCreateDto userCreateDto = new UserCreateDto()
+            {
+                Login = speakerCreateModel.Login,
+                Password = speakerCreateModel.Password,
+                UserDetails = new UserDetailsCreateDto()
+                {
+                    FullName = speakerCreateModel.FullName,
+                    Email = speakerCreateModel.Email,
+                    AdditionalInfo = speakerCreateModel.AdditionalInfo,
+                }
+            };
+
+            UserDto userDto = await _userRepository.CreateSpeaker(userCreateDto);
+
             UserViewModel userViewModel = new()
             {
                 Id = userDto.Id,
                 Login = userDto.Login,
                 UserRoleId = userDto.UserRoleId,
+                UserDetails = new UserDetailsViewModel()
+                {
+                    Id = userDto.UserDetails.Id,
+                    FullName = userDto.UserDetails.FullName,
+                    Email = userDto.UserDetails.Email,
+                    AdditionalInfo = userDto.UserDetails.AdditionalInfo,
+                },
                 Сreated = userDto.Сreated,
                 Updated = userDto.Updated,
             };

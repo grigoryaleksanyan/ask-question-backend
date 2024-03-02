@@ -6,18 +6,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AskQuestion.BLL.Repositories.Implementations
 {
-    public class FaqEntryRepository : IFaqEntryRepository
+    public class FaqEntryRepository(DataContext dataContext) : IFaqEntryRepository
     {
-        private readonly DataContext _dataContext;
-
-        public FaqEntryRepository(DataContext dataContext)
-        {
-            _dataContext = dataContext;
-        }
-
         public async Task<IEnumerable<FaqEntryDto>> GetAllAsync()
         {
-            IEnumerable<FaqEntryDto> faqEntryDtos = await _dataContext.FaqEntries
+            IEnumerable<FaqEntryDto> faqEntryDtos = await dataContext.FaqEntries
                 .AsNoTracking()
                 .OrderBy(entry => entry.Order)
                 .Select(faqEntry => new FaqEntryDto
@@ -35,7 +28,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
 
         public async Task<FaqEntryDto?> GetByIdAsync(Guid id)
         {
-            FaqEntry? faqEntry = await _dataContext.FaqEntries
+            FaqEntry? faqEntry = await dataContext.FaqEntries
                 .AsNoTracking()
                 .FirstOrDefaultAsync(entry => entry.Id == id);
 
@@ -66,15 +59,15 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 Сreated = DateTimeOffset.UtcNow,
             };
 
-            await _dataContext.AddAsync(faqEntry);
-            await _dataContext.SaveChangesAsync();
+            await dataContext.AddAsync(faqEntry);
+            await dataContext.SaveChangesAsync();
 
             return faqEntry.Id;
         }
 
         public async Task UpdateAsync(FaqEntryUpdateDto faqEntryUpdateDto)
         {
-            FaqEntry? faqEntry = await _dataContext.FaqEntries
+            FaqEntry? faqEntry = await dataContext.FaqEntries
                 .FirstOrDefaultAsync(entry => entry.Id == faqEntryUpdateDto.Id);
 
             if (faqEntry == default)
@@ -86,12 +79,12 @@ namespace AskQuestion.BLL.Repositories.Implementations
             faqEntry.Answer = faqEntryUpdateDto.Answer;
             faqEntry.Updated = DateTimeOffset.UtcNow;
 
-            await _dataContext.SaveChangesAsync();
+            await dataContext.SaveChangesAsync();
         }
 
         public async Task DeleteAsync(Guid id)
         {
-            FaqEntry? faqEntry = await _dataContext.FaqEntries
+            FaqEntry? faqEntry = await dataContext.FaqEntries
                 .FirstOrDefaultAsync(entry => entry.Id == id);
 
             if (faqEntry == default)
@@ -99,17 +92,17 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 throw new InvalidOperationException("Объект не найден");
             }
 
-            _dataContext.Remove(faqEntry);
-            await _dataContext.SaveChangesAsync();
+            dataContext.Remove(faqEntry);
+            await dataContext.SaveChangesAsync();
         }
 
         public async Task SetOrderAsync(Guid[] ids)
         {
-            var entries = await _dataContext.FaqEntries.ToListAsync();
+            var entries = await dataContext.FaqEntries.ToListAsync();
 
             for (int i = 0; i < ids.Length; i++)
             {
-                var entry = entries.FirstOrDefault(entry => entry.Id == ids[i]);
+                var entry = entries.Find(entry => entry.Id == ids[i]);
 
                 if (entry == null)
                 {
@@ -119,7 +112,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 entry.Order = i;
             }
 
-            await _dataContext.SaveChangesAsync();
+            await dataContext.SaveChangesAsync();
         }
     }
 }

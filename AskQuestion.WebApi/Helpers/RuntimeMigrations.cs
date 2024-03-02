@@ -1,6 +1,5 @@
 ﻿using AskQuestion.DAL;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
 
 namespace AskQuestion.WebApi.Helpers
 {
@@ -21,9 +20,9 @@ namespace AskQuestion.WebApi.Helpers
 
             appContextService.Database.Migrate();
 
-            using var connection = (NpgsqlConnection)appContextService.Database.GetDbConnection();
-            connection.Open();
-            connection.ReloadTypes();
+            //using var connection = (NpgsqlConnection)appContextService.Database.GetDbConnection();
+            //connection.Open();
+            //connection.ReloadTypes();
         }
     }
 }
