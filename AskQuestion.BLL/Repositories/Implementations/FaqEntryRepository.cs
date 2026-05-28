@@ -19,7 +19,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
                     Question = faqEntry.Question,
                     Answer = faqEntry.Answer,
                     Order = faqEntry.Order,
-                    Сreated = faqEntry.Сreated
+                    Created = faqEntry.Created
                 })
                 .ToListAsync();
 
@@ -42,7 +42,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 Id = faqEntry.Id,
                 Question = faqEntry.Question,
                 Answer = faqEntry.Answer,
-                Сreated = faqEntry.Сreated
+                Created = faqEntry.Created
             };
 
             return faqEntryDto;
@@ -56,7 +56,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 Question = faqEntryCreateDto.Question,
                 Answer = faqEntryCreateDto.Answer,
                 Order = faqEntryCreateDto.Order,
-                Сreated = DateTimeOffset.UtcNow,
+                Created = DateTimeOffset.UtcNow,
             };
 
             await dataContext.AddAsync(faqEntry);

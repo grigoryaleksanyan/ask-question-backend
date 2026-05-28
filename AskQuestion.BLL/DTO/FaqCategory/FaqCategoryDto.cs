@@ -7,8 +7,8 @@ namespace AskQuestion.BLL.DTO.FaqCategory
         public Guid Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public int Order { get; set; }
-        public DateTimeOffset Сreated { get; set; }
+        public DateTimeOffset Created { get; set; }
         public DateTimeOffset? Updated { get; set; }
-        public IEnumerable<FaqEntryDto> Entries { get; set; } = Enumerable.Empty<FaqEntryDto>();
+        public IEnumerable<FaqEntryDto> Entries { get; set; }
     }
 }

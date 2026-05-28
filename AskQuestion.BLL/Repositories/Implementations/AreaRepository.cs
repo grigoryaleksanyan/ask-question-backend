@@ -18,7 +18,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
                     Id = area.Id,
                     Title = area.Title,
                     Order = area.Order,
-                    Сreated = area.Сreated
+                    Created = area.Created
                 })
                 .ToListAsync();
 
@@ -31,7 +31,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
             {
                 Title = areaCreateDto.Title,
                 Order = areaCreateDto.Order,
-                Сreated = DateTimeOffset.UtcNow,
+                Created = DateTimeOffset.UtcNow,
             };
 
             await dataContext.AddAsync(area);

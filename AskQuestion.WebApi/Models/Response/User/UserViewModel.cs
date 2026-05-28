@@ -8,7 +8,7 @@ namespace AskQuestion.WebApi.Models.Response.User
         public string Login { get; set; } = null!;
         public UserRoles UserRoleId { get; set; }
         public UserDetailsViewModel? UserDetails { get; set; }
-        public DateTimeOffset Сreated { get; set; }
+        public DateTimeOffset Created { get; set; }
         public DateTimeOffset? Updated { get; set; }
     }
 }

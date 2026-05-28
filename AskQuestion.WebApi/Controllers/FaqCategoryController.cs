@@ -39,7 +39,7 @@ namespace AskQuestion.WebApi.Controllers
                 Id = faqCategoryDto.Id,
                 Name = faqCategoryDto.Name,
                 Order = faqCategoryDto.Order,
-                Сreated = faqCategoryDto.Сreated,
+                Created = faqCategoryDto.Created,
                 Updated = faqCategoryDto.Updated,
             });
 
@@ -60,14 +60,14 @@ namespace AskQuestion.WebApi.Controllers
                 Id = faqCategoryDto.Id,
                 Name = faqCategoryDto.Name,
                 Order = faqCategoryDto.Order,
-                Сreated = faqCategoryDto.Сreated,
+                Created = faqCategoryDto.Created,
                 Updated = faqCategoryDto.Updated,
                 Entries = faqCategoryDto.Entries.Select(entry => new FaqEntryViewModel()
                 {
                     Id = entry.Id,
                     Question = entry.Question,
                     Answer = entry.Answer,
-                    Сreated = entry.Сreated,
+                    Created = entry.Created,
                     Updated = entry.Updated
                 }).ToList()
             });
@@ -99,14 +99,14 @@ namespace AskQuestion.WebApi.Controllers
                 Id = faqCategoryDto.Id,
                 Name = faqCategoryDto.Name,
                 Order = faqCategoryDto.Order,
-                Сreated = faqCategoryDto.Сreated,
+                Created = faqCategoryDto.Created,
                 Updated = faqCategoryDto.Updated,
                 Entries = faqCategoryDto.Entries.Select(entry => new FaqEntryViewModel()
                 {
                     Id = entry.Id,
                     Question = entry.Question,
                     Answer = entry.Answer,
-                    Сreated = entry.Сreated,
+                    Created = entry.Created,
                     Updated = entry.Updated
                 }).ToList()
             };

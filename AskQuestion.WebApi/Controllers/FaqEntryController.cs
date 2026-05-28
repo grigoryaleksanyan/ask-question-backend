@@ -40,7 +40,7 @@ namespace AskQuestion.WebApi.Controllers
                 Question = faqEntryDtos.Question,
                 Answer = faqEntryDtos.Answer,
                 Order = faqEntryDtos.Order,
-                Сreated = faqEntryDtos.Сreated,
+                Created = faqEntryDtos.Created,
                 Updated = faqEntryDtos.Updated,
             });
 
@@ -71,7 +71,7 @@ namespace AskQuestion.WebApi.Controllers
                 Question = faqEntryDto.Question,
                 Answer = faqEntryDto.Answer,
                 Order = faqEntryDto.Order,
-                Сreated = faqEntryDto.Сreated,
+                Created = faqEntryDto.Created,
                 Updated = faqEntryDto.Updated,
             };
 

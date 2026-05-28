@@ -69,7 +69,7 @@ namespace AskQuestion.DAL
             (
                 new List<User>
                 {
-                    new() { Id = Guid.NewGuid(), Login = "Admin", UserRoleId = 1, Password = BCrypt.Net.BCrypt.HashPassword("Admin"), Сreated = DateTimeOffset.UtcNow },
+                    new() { Id = Guid.NewGuid(), Login = "Admin", UserRoleId = 1, Password = BCrypt.Net.BCrypt.HashPassword("Admin"), Created = DateTimeOffset.UtcNow },
                 }
             );
         }

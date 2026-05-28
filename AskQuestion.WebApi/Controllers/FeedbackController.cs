@@ -40,7 +40,7 @@ namespace AskQuestion.WebApi.Controllers
                 Email = feedbackDto.Email,
                 Theme = feedbackDto.Theme,
                 Text = feedbackDto.Text,
-                Сreated = feedbackDto.Сreated,
+                Created = feedbackDto.Created,
                 Updated = feedbackDto.Updated,
             });
 

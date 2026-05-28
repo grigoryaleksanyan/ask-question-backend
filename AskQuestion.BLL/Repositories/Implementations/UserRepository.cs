@@ -29,7 +29,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 Id = user.Id,
                 Login = user.Login,
                 UserRoleId = (Core.Enums.UserRoles)user.UserRoleId,
-                Сreated = user.Сreated,
+                Created = user.Created,
             };
 
             return userDto;
@@ -58,10 +58,10 @@ namespace AskQuestion.BLL.Repositories.Implementations
                     FullName = user.UserDetails.FullName,
                     Email = user.UserDetails.Email,
                     AdditionalInfo = user.UserDetails.AdditionalInfo,
-                    Сreated = user.UserDetails.Сreated,
+                    Created = user.UserDetails.Created,
                     Updated = user.UserDetails.Updated,
                 } : null,
-                Сreated = user.Сreated,
+                Created = user.Created,
                 Updated = user.Updated,
             };
 
@@ -71,7 +71,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
         public async Task<UserDto?> CreateSpeaker(UserCreateDto userCreateDto)
         {
             var isNotUniqueLogin = dataContext.Users
-                .Any(u => u.Login.Equals(userCreateDto.Login, StringComparison.CurrentCultureIgnoreCase));
+                .Any(u => u.Login.Equals(userCreateDto.Login));
 
             if (isNotUniqueLogin)
             {
@@ -79,7 +79,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
             }
 
             var isNotUniqueEmail = dataContext.UserDetails
-                .Any(ud => ud.Email.Equals(userCreateDto.UserDetails.Email, StringComparison.CurrentCultureIgnoreCase));
+                .Any(ud => ud.Email.Equals(userCreateDto.UserDetails.Email));
 
             if (isNotUniqueEmail)
             {
@@ -91,7 +91,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 Login = userCreateDto.Login,
                 Password = BCrypt.Net.BCrypt.HashPassword(userCreateDto.Password),
                 UserRoleId = (int)Core.Enums.UserRoles.Speaker,
-                Сreated = DateTimeOffset.UtcNow,
+                Created = DateTimeOffset.UtcNow,
             };
 
             using (var transaction = await dataContext.Database.BeginTransactionAsync())
@@ -107,7 +107,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
                         Email = userCreateDto.UserDetails.Email,
                         FullName = userCreateDto.UserDetails.FullName,
                         AdditionalInfo = userCreateDto.UserDetails.AdditionalInfo,
-                        Сreated = DateTimeOffset.UtcNow,
+                        Created = DateTimeOffset.UtcNow,
                     };
 
                     await dataContext.UserDetails.AddAsync(userDetails);
@@ -127,7 +127,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
                             Email = userDetails.Email,
                             AdditionalInfo = userDetails.AdditionalInfo
                         },
-                        Сreated = user.Сreated,
+                        Created = user.Created,
                         Updated = user.Updated,
                     };
 

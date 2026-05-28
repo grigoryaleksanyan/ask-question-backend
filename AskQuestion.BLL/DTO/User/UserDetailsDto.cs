@@ -6,7 +6,7 @@
         public string FullName { get; set; } = null!;
         public string Email { get; set; } = null!;
         public string? AdditionalInfo { get; set; }
-        public DateTimeOffset Сreated { get; set; }
+        public DateTimeOffset Created { get; set; }
         public DateTimeOffset? Updated { get; set; }
     }
 }

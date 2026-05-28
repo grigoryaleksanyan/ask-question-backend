@@ -65,7 +65,7 @@ namespace AskQuestion.WebApi.Controllers
                     Email = userDto.UserDetails.Email,
                     AdditionalInfo = userDto.UserDetails.AdditionalInfo,
                 } : null,
-                Сreated = userDto.Сreated,
+                Created = userDto.Created,
                 Updated = userDto.Updated,
             };
 
@@ -106,7 +106,7 @@ namespace AskQuestion.WebApi.Controllers
                     Email = userDto.UserDetails.Email,
                     AdditionalInfo = userDto.UserDetails.AdditionalInfo,
                 },
-                Сreated = userDto.Сreated,
+                Created = userDto.Created,
                 Updated = userDto.Updated,
             };
 

@@ -12,7 +12,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
         {
             IEnumerable<FeedbackDto> feedbackDtos = await dataContext.Feedback
                .AsNoTracking()
-               .OrderBy(feedback => feedback.Сreated)
+               .OrderBy(feedback => feedback.Created)
                .Select(feedback => new FeedbackDto
                {
                    Id = feedback.Id,
@@ -20,7 +20,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
                    Email = feedback.Email,
                    Theme = feedback.Theme,
                    Text = feedback.Text,
-                   Сreated = feedback.Сreated
+                   Created = feedback.Created
                })
                .ToListAsync();
 
@@ -35,7 +35,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 Email = feedbackCreateDto.Email,
                 Theme = feedbackCreateDto.Theme,
                 Text = feedbackCreateDto.Text,
-                Сreated = DateTimeOffset.UtcNow,
+                Created = DateTimeOffset.UtcNow,
             };
 
             await dataContext.AddAsync(feedback);

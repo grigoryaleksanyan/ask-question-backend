@@ -55,7 +55,7 @@ namespace AskQuestion.WebApi.Controllers
                 Id = userDto.Id,
                 Login = userDto.Login,
                 UserRoleId = userDto.UserRoleId,
-                Сreated = userDto.Сreated,
+                Created = userDto.Created,
                 Updated = userDto.Updated,
             };
 

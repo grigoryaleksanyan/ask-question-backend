@@ -37,7 +37,7 @@ namespace AskQuestion.WebApi.Controllers
                 Id = areaDto.Id,
                 Title = areaDto.Title,
                 Order = areaDto.Order,
-                Сreated = areaDto.Сreated,
+                Created = areaDto.Created,
                 Updated = areaDto.Updated,
             });
 

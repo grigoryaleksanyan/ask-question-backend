@@ -19,7 +19,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
                     Id = faqCategory.Id,
                     Name = faqCategory.Name,
                     Order = faqCategory.Order,
-                    Сreated = faqCategory.Сreated
+                    Created = faqCategory.Created
                 })
                 .ToListAsync();
 
@@ -38,7 +38,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
                     Id = faqCategory.Id,
                     Name = faqCategory.Name,
                     Order = faqCategory.Order,
-                    Сreated = faqCategory.Сreated,
+                    Created = faqCategory.Created,
                     Updated = faqCategory.Updated,
                     Entries = faqCategory.FaqEntries.Select(entry => new FaqEntryDto()
                     {
@@ -46,7 +46,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
                         Question = entry.Question,
                         Answer = entry.Answer,
                         Order = entry.Order,
-                        Сreated = entry.Сreated,
+                        Created = entry.Created,
                         Updated = entry.Updated
                     })
                     .OrderBy(entry => entry.Order)
@@ -61,7 +61,8 @@ namespace AskQuestion.BLL.Repositories.Implementations
         {
             FaqCategory? faqCategory = await dataContext.FaqCategories
                 .AsNoTracking()
-                .Include(faqCategory => faqCategory.FaqEntries.OrderBy(entry => entry.Order))
+                .Include(faqCategory => faqCategory.FaqEntries
+                    .OrderBy(entry => entry.Order))
                 .FirstOrDefaultAsync(faqCategory => faqCategory.Id == id);
 
             if (faqCategory == default)
@@ -74,7 +75,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 Id = faqCategory.Id,
                 Name = faqCategory.Name,
                 Order = faqCategory.Order,
-                Сreated = faqCategory.Сreated,
+                Created = faqCategory.Created,
                 Updated = faqCategory.Updated,
                 Entries = faqCategory.FaqEntries.Select(entry => new FaqEntryDto()
                 {
@@ -82,7 +83,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
                     Question = entry.Question,
                     Answer = entry.Answer,
                     Order = entry.Order,
-                    Сreated = entry.Сreated,
+                    Created = entry.Created,
                     Updated = entry.Updated
                 }),
             };
@@ -96,7 +97,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
             {
                 Name = faqCategoryCreateDto.Name,
                 Order = faqCategoryCreateDto.Order,
-                Сreated = DateTimeOffset.UtcNow,
+                Created = DateTimeOffset.UtcNow,
             };
 
             await dataContext.AddAsync(faqCategory);

@@ -58,7 +58,33 @@ namespace AskQuestion.WebApi.Controllers
                 Likes = question.Likes,
                 Dislikes = question.Dislikes,
                 Views = question.Views,
-                Сreated = question.Сreated,
+                Created = question.Created,
+                Answered = question.Answered
+            });
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Получить список популярных вопросов.
+        /// </summary>
+        /// <response code='200'>Список популярных вопросов.</response>
+        [HttpGet("GetPopularQuestions")]
+        public async Task<ActionResult<IEnumerable<QuestionViewModel>>> GetPopularQuestions()
+        {
+            var questions = await _questionRepository.GetPopularQuestionsAsync();
+
+            IEnumerable<QuestionViewModel> result = questions.Select(question => new QuestionViewModel
+            {
+                Id = question.Id,
+                Text = question.Text,
+                Author = question.Author,
+                Area = question.Area,
+                Speaker = question.Speaker,
+                Likes = question.Likes,
+                Dislikes = question.Dislikes,
+                Views = question.Views,
+                Created = question.Created,
                 Answered = question.Answered
             });
 
@@ -93,7 +119,7 @@ namespace AskQuestion.WebApi.Controllers
                 Likes = question.Likes,
                 Dislikes = question.Dislikes,
                 Views = question.Views,
-                Сreated = question.Сreated,
+                Created = question.Created,
                 Answered = question.Answered
             };
 

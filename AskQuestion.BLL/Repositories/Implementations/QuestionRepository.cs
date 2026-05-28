@@ -21,7 +21,32 @@ namespace AskQuestion.BLL.Repositories.Implementations
                     Likes = question.Likes,
                     Dislikes = question.Dislikes,
                     Views = question.Views,
-                    Сreated = question.Сreated,
+                    Created = question.Created,
+                    Answered = question.Answered
+                })
+                .ToListAsync();
+
+            return questions;
+        }
+
+        public async Task<IEnumerable<QuestionDto>> GetPopularQuestionsAsync()
+        {
+            IEnumerable<QuestionDto> questions = await dataContext.Questions
+                .AsNoTracking()
+                .OrderBy(question => question.Likes)
+                    .ThenBy(question => question.Created)
+                .Take(5)
+                .Select(question => new QuestionDto
+                {
+                    Id = question.Id,
+                    Text = question.Text,
+                    Author = question.Author,
+                    Area = question.Area,
+                    Speaker = question.Speaker,
+                    Likes = question.Likes,
+                    Dislikes = question.Dislikes,
+                    Views = question.Views,
+                    Created = question.Created,
                     Answered = question.Answered
                 })
                 .ToListAsync();
@@ -50,7 +75,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 Likes = question.Likes,
                 Dislikes = question.Dislikes,
                 Views = question.Views,
-                Сreated = question.Сreated,
+                Created = question.Created,
                 Answered = question.Answered
             };
 
@@ -65,7 +90,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 Author = questionCreateDto.Author,
                 Area = questionCreateDto.Area,
                 Speaker = questionCreateDto.Speaker,
-                Сreated = DateTimeOffset.UtcNow,
+                Created = DateTimeOffset.UtcNow,
             };
 
             await dataContext.AddAsync(question);
