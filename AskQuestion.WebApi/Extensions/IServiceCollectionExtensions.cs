@@ -67,6 +67,7 @@ namespace AskQuestion.WebApi.Extensions
             serviceCollection.AddScoped<IFaqEntryRepository, FaqEntryRepository>();
             serviceCollection.AddScoped<IFeedbackRepository, FeedbackRepository>();
             serviceCollection.AddScoped<IAreaRepository, AreaRepository>();
+            serviceCollection.AddScoped<IDashboardRepository, DashboardRepository>();
         }
     }
 }
