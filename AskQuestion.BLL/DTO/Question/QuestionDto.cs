@@ -1,4 +1,6 @@
-﻿namespace AskQuestion.BLL.DTO.Question
+﻿using AskQuestion.Core.Enums;
+
+namespace AskQuestion.BLL.DTO.Question
 {
     public class QuestionDto
     {
@@ -10,6 +12,7 @@
         public int Views { get; set; }
         public int Likes { get; set; }
         public int Dislikes { get; set; }
+        public VoteType? UserVote { get; set; }
         public int Status { get; set; }
         public DateTimeOffset Created { get; set; }
         public DateTimeOffset? Answered { get; set; }
