@@ -1,5 +1,6 @@
 ﻿using AskQuestion.BLL.DTO;
 using AskQuestion.BLL.DTO.Question;
+using AskQuestion.Core.Enums;
 using AskQuestion.DAL;
 using AskQuestion.DAL.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -181,6 +182,81 @@ namespace AskQuestion.BLL.Repositories.Implementations
 
             dataContext.Remove(question);
             await dataContext.SaveChangesAsync();
+        }
+
+        public async Task<VoteResultDto> ToggleLikeAsync(Guid questionId, Guid visitorId)
+        {
+            Question? question = await dataContext.Questions.FindAsync(questionId)
+                ?? throw new InvalidOperationException("Вопрос не найден");
+
+            QuestionVote? existingVote = await dataContext.QuestionVotes.FindAsync(questionId, visitorId);
+
+            if (existingVote != null)
+            {
+                if (existingVote.VoteType == VoteType.Like)
+                {
+                    dataContext.QuestionVotes.Remove(existingVote);
+                    question.Likes--;
+                    await dataContext.SaveChangesAsync();
+                    return new VoteResultDto { Likes = question.Likes, Dislikes = question.Dislikes, UserVote = null };
+                }
+
+                existingVote.VoteType = VoteType.Like;
+                question.Dislikes--;
+                question.Likes++;
+                await dataContext.SaveChangesAsync();
+                return new VoteResultDto { Likes = question.Likes, Dislikes = question.Dislikes, UserVote = VoteType.Like };
+            }
+
+            dataContext.QuestionVotes.Add(new QuestionVote { QuestionId = questionId, VisitorId = visitorId, VoteType = VoteType.Like });
+            question.Likes++;
+            await dataContext.SaveChangesAsync();
+            return new VoteResultDto { Likes = question.Likes, Dislikes = question.Dislikes, UserVote = VoteType.Like };
+        }
+
+        public async Task<VoteResultDto> ToggleDislikeAsync(Guid questionId, Guid visitorId)
+        {
+            Question? question = await dataContext.Questions.FindAsync(questionId)
+                ?? throw new InvalidOperationException("Вопрос не найден");
+
+            QuestionVote? existingVote = await dataContext.QuestionVotes.FindAsync(questionId, visitorId);
+
+            if (existingVote != null)
+            {
+                if (existingVote.VoteType == VoteType.Dislike)
+                {
+                    dataContext.QuestionVotes.Remove(existingVote);
+                    question.Dislikes--;
+                    await dataContext.SaveChangesAsync();
+                    return new VoteResultDto { Likes = question.Likes, Dislikes = question.Dislikes, UserVote = null };
+                }
+
+                existingVote.VoteType = VoteType.Dislike;
+                question.Likes--;
+                question.Dislikes++;
+                await dataContext.SaveChangesAsync();
+                return new VoteResultDto { Likes = question.Likes, Dislikes = question.Dislikes, UserVote = VoteType.Dislike };
+            }
+
+            dataContext.QuestionVotes.Add(new QuestionVote { QuestionId = questionId, VisitorId = visitorId, VoteType = VoteType.Dislike });
+            question.Dislikes++;
+            await dataContext.SaveChangesAsync();
+            return new VoteResultDto { Likes = question.Likes, Dislikes = question.Dislikes, UserVote = VoteType.Dislike };
+        }
+
+        public async Task IncrementViewsAsync(Guid questionId)
+        {
+            Question? question = await dataContext.Questions.FindAsync(questionId);
+            if (question == null) return;
+
+            question.Views++;
+            await dataContext.SaveChangesAsync();
+        }
+
+        public async Task<VoteType?> GetUserVoteAsync(Guid questionId, Guid visitorId)
+        {
+            QuestionVote? vote = await dataContext.QuestionVotes.FindAsync(questionId, visitorId);
+            return vote?.VoteType;
         }
     }
 }
