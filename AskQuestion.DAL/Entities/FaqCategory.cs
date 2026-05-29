@@ -7,7 +7,7 @@
 
         #region Навигационные свойства
 
-        public IEnumerable<FaqEntry> FaqEntries { get; set; } = Enumerable.Empty<FaqEntry>();
+        public IEnumerable<FaqEntry> FaqEntries { get; set; }
 
         #endregion
     }
