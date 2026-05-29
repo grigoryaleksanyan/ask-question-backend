@@ -1,4 +1,7 @@
-﻿namespace AskQuestion.WebApi.Models.Response.Question
+﻿using AskQuestion.Core.Enums;
+using System.Text.Json.Serialization;
+
+namespace AskQuestion.WebApi.Models.Response.Question
 {
     public class QuestionViewModel
     {
@@ -13,5 +16,8 @@
         public int Status { get; set; }
         public DateTimeOffset Created { get; set; }
         public DateTimeOffset? Answered { get; set; }
+
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        public VoteType? UserVote { get; set; }
     }
 }
