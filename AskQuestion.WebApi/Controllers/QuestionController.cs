@@ -1,4 +1,5 @@
-﻿using AskQuestion.BLL.DTO.Question;
+﻿using AskQuestion.BLL.DTO;
+using AskQuestion.BLL.DTO.Question;
 using AskQuestion.BLL.Repositories;
 using AskQuestion.Core.Constants;
 using AskQuestion.WebApi.Helpers;
@@ -44,25 +45,39 @@ namespace AskQuestion.WebApi.Controllers
         /// </summary>
         /// <response code='200'>Список всех вопросов.</response>
         [HttpGet("GetAll")]
-        public async Task<ActionResult<IEnumerable<QuestionViewModel>>> GetAll()
+        public async Task<ActionResult<PaginatedResult<QuestionViewModel>>> GetAll(
+            int page = 1,
+            int pageSize = 10,
+            int? status = null,
+            string? speaker = null,
+            string? area = null,
+            string? search = null,
+            string sortOrder = "desc")
         {
-            var questions = await _questionRepository.GetAllAsync();
+            var result = await _questionRepository.GetAllAsync(page, pageSize, status, speaker, area, search, sortOrder);
 
-            IEnumerable<QuestionViewModel> result = questions.Select(question => new QuestionViewModel
+            PaginatedResult<QuestionViewModel> response = new()
             {
-                Id = question.Id,
-                Text = question.Text,
-                Author = question.Author,
-                Area = question.Area,
-                Speaker = question.Speaker,
-                Likes = question.Likes,
-                Dislikes = question.Dislikes,
-                Views = question.Views,
-                Created = question.Created,
-                Answered = question.Answered
-            });
+                Items = result.Items.Select(question => new QuestionViewModel
+                {
+                    Id = question.Id,
+                    Text = question.Text,
+                    Author = question.Author,
+                    Area = question.Area,
+                    Speaker = question.Speaker,
+                    Likes = question.Likes,
+                    Dislikes = question.Dislikes,
+                    Views = question.Views,
+                    Status = question.Status,
+                    Created = question.Created,
+                    Answered = question.Answered
+                }).ToList(),
+                TotalCount = result.TotalCount,
+                Page = result.Page,
+                PageSize = result.PageSize,
+            };
 
-            return Ok(result);
+            return Ok(response);
         }
 
         /// <summary>
@@ -84,6 +99,7 @@ namespace AskQuestion.WebApi.Controllers
                 Likes = question.Likes,
                 Dislikes = question.Dislikes,
                 Views = question.Views,
+                Status = question.Status,
                 Created = question.Created,
                 Answered = question.Answered
             });
@@ -119,6 +135,7 @@ namespace AskQuestion.WebApi.Controllers
                 Likes = question.Likes,
                 Dislikes = question.Dislikes,
                 Views = question.Views,
+                Status = question.Status,
                 Created = question.Created,
                 Answered = question.Answered
             };
