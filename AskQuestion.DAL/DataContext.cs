@@ -45,6 +45,11 @@ namespace AskQuestion.DAL
         /// </summary>
         public DbSet<Area> Areas { get; set; } = null!;
 
+        /// <summary>
+        /// Голоса за вопросы.
+        /// </summary>
+        public DbSet<QuestionVote> QuestionVotes { get; set; } = null!;
+
         public DataContext(DbContextOptions<DataContext> options) : base(options)
         {
             ArgumentNullException.ThrowIfNull(options);
@@ -72,6 +77,15 @@ namespace AskQuestion.DAL
                     new() { Id = Guid.NewGuid(), Login = "Admin", UserRoleId = 1, Password = BCrypt.Net.BCrypt.HashPassword("Admin"), Created = DateTimeOffset.UtcNow },
                 }
             );
+
+            modelBuilder.Entity<QuestionVote>(entity =>
+            {
+                entity.HasKey(qv => new { qv.QuestionId, qv.VisitorId });
+                entity.HasOne(qv => qv.Question)
+                    .WithMany()
+                    .HasForeignKey(qv => qv.QuestionId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
         }
     }
 }
