@@ -1,5 +1,6 @@
 ﻿using AskQuestion.BLL.DTO;
 using AskQuestion.BLL.DTO.Question;
+using AskQuestion.Core.Enums;
 
 namespace AskQuestion.BLL.Repositories
 {
@@ -23,5 +24,13 @@ namespace AskQuestion.BLL.Repositories
         Task UpdateAsync(Guid id, QuestionUpdateDto questionUpdateDto);
 
         Task DeleteAsync(Guid id);
+
+        Task<VoteResultDto> ToggleLikeAsync(Guid questionId, Guid visitorId);
+
+        Task<VoteResultDto> ToggleDislikeAsync(Guid questionId, Guid visitorId);
+
+        Task IncrementViewsAsync(Guid questionId);
+
+        Task<VoteType?> GetUserVoteAsync(Guid questionId, Guid visitorId);
     }
 }
