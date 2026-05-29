@@ -161,5 +161,23 @@ namespace AskQuestion.BLL.Repositories.Implementations
 
             await dataContext.SaveChangesAsync();
         }
+
+        public async Task<IEnumerable<SpeakerDto>> GetSpeakersAsync()
+        {
+            int speakerRoleId = (int)Core.Enums.UserRoles.Speaker;
+
+            List<SpeakerDto> speakers = await dataContext.Users
+                .AsNoTracking()
+                .Include(u => u.UserDetails)
+                .Where(u => u.UserRoleId == speakerRoleId)
+                .Select(u => new SpeakerDto
+                {
+                    Id = u.Id,
+                    FullName = u.UserDetails != null ? u.UserDetails.FullName : u.Login,
+                })
+                .ToListAsync();
+
+            return speakers;
+        }
     }
 }

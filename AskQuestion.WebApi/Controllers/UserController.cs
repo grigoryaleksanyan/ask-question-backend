@@ -148,5 +148,19 @@ namespace AskQuestion.WebApi.Controllers
 
             return Ok();
         }
+
+        [HttpGet("GetSpeakers")]
+        public async Task<ActionResult<IEnumerable<SpeakerViewModel>>> GetSpeakers()
+        {
+            var speakers = await _userRepository.GetSpeakersAsync();
+
+            var result = speakers.Select(s => new SpeakerViewModel
+            {
+                Id = s.Id,
+                FullName = s.FullName,
+            });
+
+            return Ok(result);
+        }
     }
 }
