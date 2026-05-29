@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Сервисы контейнера.
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
 
 builder.Services.AddControllers();
 
@@ -17,11 +17,13 @@ builder.Services.AddDbContext<DataContext>(options => options.UseNpgsql(builder.
 
 builder.Services.ConfigureRepositories();
 
+builder.Services.AddScoped<EnsureVisitorIdAttribute>();
+
 var app = builder.Build();
 
 builder.Services.AddCors();
 
-// Миграция БД
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -30,7 +32,7 @@ using (var scope = app.Services.CreateScope())
     dbContext.Database.Migrate();
 }
 
-// Конвейер HTTP-запросов.
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ HTTP-пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
 
 if (app.Environment.IsDevelopment())
 {
@@ -38,14 +40,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseCors(builder => builder.WithOrigins("http://localhost:8080")
+app.UseCors(builder => builder.WithOrigins("http://localhost:5000")
                         .AllowCredentials()
                         .AllowAnyHeader()
                         .AllowAnyMethod());
 
 app.UseCookiePolicy(new CookiePolicyOptions
 {
-    MinimumSameSitePolicy = SameSiteMode.Strict,
+    MinimumSameSitePolicy = SameSiteMode.Lax,
     HttpOnly = HttpOnlyPolicy.Always,
     Secure = CookieSecurePolicy.None
 });

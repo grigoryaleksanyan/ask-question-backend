@@ -2,6 +2,8 @@
 using AskQuestion.BLL.DTO.Question;
 using AskQuestion.BLL.Repositories;
 using AskQuestion.Core.Constants;
+using AskQuestion.Core.Enums;
+using AskQuestion.WebApi.Extensions;
 using AskQuestion.WebApi.Helpers;
 using AskQuestion.WebApi.Models.Request.Question;
 using AskQuestion.WebApi.Models.Response.Question;
@@ -16,6 +18,7 @@ namespace AskQuestion.WebApi.Controllers
     [Route("api/Question")]
     [ApiController]
     [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
+    [ServiceFilter(typeof(EnsureVisitorIdAttribute))]
     public class QuestionController : ControllerBase
     {
         private readonly IQuestionRepository _questionRepository;
@@ -23,6 +26,15 @@ namespace AskQuestion.WebApi.Controllers
         public QuestionController(IQuestionRepository questionRepository)
         {
             _questionRepository = questionRepository ?? throw new ArgumentNullException(nameof(questionRepository));
+        }
+
+        private Guid GetVisitorId()
+        {
+            var visitorIdStr = HttpContext.Items["VisitorId"]?.ToString()
+                ?? HttpContext.Request.Cookies["VisitorId"]
+                ?? throw new InvalidOperationException("VisitorId не найден");
+
+            return Guid.Parse(visitorIdStr);
         }
 
         /// <summary>
@@ -118,12 +130,17 @@ namespace AskQuestion.WebApi.Controllers
         [HttpGet("GetById/{id:guid}")]
         public async Task<ActionResult<QuestionViewModel>> GetById(Guid id)
         {
-            var question = await _questionRepository.GetByIdAsync(id);
+            QuestionDto? question = await _questionRepository.GetByIdAsync(id);
 
-            if (question == default)
+            if (question == null)
             {
                 return NotFound();
             }
+
+            await _questionRepository.IncrementViewsAsync(id);
+
+            Guid visitorId = GetVisitorId();
+            VoteType? userVote = await _questionRepository.GetUserVoteAsync(id, visitorId);
 
             QuestionViewModel result = new()
             {
@@ -134,13 +151,48 @@ namespace AskQuestion.WebApi.Controllers
                 Speaker = question.Speaker,
                 Likes = question.Likes,
                 Dislikes = question.Dislikes,
-                Views = question.Views,
+                Views = question.Views + 1,
                 Status = question.Status,
                 Created = question.Created,
-                Answered = question.Answered
+                Answered = question.Answered,
+                UserVote = userVote,
             };
 
             return Ok(result);
+        }
+
+        [HttpPost("{id:guid}/like")]
+        public async Task<ActionResult<VoteResultViewModel>> Like(Guid id)
+        {
+            Guid visitorId = GetVisitorId();
+
+            VoteResultDto result = await _questionRepository.ToggleLikeAsync(id, visitorId);
+
+            VoteResultViewModel response = new()
+            {
+                Likes = result.Likes,
+                Dislikes = result.Dislikes,
+                UserVote = result.UserVote,
+            };
+
+            return Ok(response);
+        }
+
+        [HttpPost("{id:guid}/dislike")]
+        public async Task<ActionResult<VoteResultViewModel>> Dislike(Guid id)
+        {
+            Guid visitorId = GetVisitorId();
+
+            VoteResultDto result = await _questionRepository.ToggleDislikeAsync(id, visitorId);
+
+            VoteResultViewModel response = new()
+            {
+                Likes = result.Likes,
+                Dislikes = result.Dislikes,
+                UserVote = result.UserVote,
+            };
+
+            return Ok(response);
         }
 
         /// <summary>
