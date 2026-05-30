@@ -6,7 +6,7 @@ namespace AskQuestion.BLL.Repositories.Interfaces
     {
         Task<IEnumerable<AreaDto>> GetAllAsync();
 
-        Task<Guid> CreateAsync(AreaCreateDto areaCreateDto);
+        Task<AreaDto> CreateAsync(AreaCreateDto areaCreateDto);
 
         Task UpdateAsync(AreaUpdateDto areaUpdateDto);
 

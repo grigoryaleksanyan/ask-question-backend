@@ -25,7 +25,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
             return areaDtos;
         }
 
-        public async Task<Guid> CreateAsync(AreaCreateDto areaCreateDto)
+        public async Task<AreaDto> CreateAsync(AreaCreateDto areaCreateDto)
         {
             Area area = new()
             {
@@ -37,7 +37,14 @@ namespace AskQuestion.BLL.Repositories.Implementations
             await dataContext.AddAsync(area);
             await dataContext.SaveChangesAsync();
 
-            return area.Id;
+            return new AreaDto
+            {
+                Id = area.Id,
+                Title = area.Title,
+                Order = area.Order,
+                Created = area.Created,
+                Updated = area.Updated,
+            };
         }
 
         public async Task UpdateAsync(AreaUpdateDto areaUpdateDto)

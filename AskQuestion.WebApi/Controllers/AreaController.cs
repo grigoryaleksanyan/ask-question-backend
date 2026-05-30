@@ -48,10 +48,10 @@ namespace AskQuestion.WebApi.Controllers
 		/// Создать область.
 		/// </summary>
         /// <param name="areaCreateModel">Модель создания области</param>
-		/// <response code='200'>Id созданной категории.</response>
+		/// <response code='200'>Созданная область.</response>
         [HttpPost("Create")]
         [Authorize(Roles = UserStringRoles.ADMINISTRATORS_ONLY)]
-        public async Task<ActionResult<Guid>> Create(AreaCreateModel areaCreateModel)
+        public async Task<ActionResult<AreaViewModel>> Create(AreaCreateModel areaCreateModel)
         {
             AreaCreateDto areaCreateDto = new()
             {
@@ -59,9 +59,18 @@ namespace AskQuestion.WebApi.Controllers
                 Order = areaCreateModel.Order,
             };
 
-            Guid id = await _areaRepository.CreateAsync(areaCreateDto);
+            var areaDto = await _areaRepository.CreateAsync(areaCreateDto);
 
-            return CreatedAtAction(nameof(Create), id);
+            var result = new AreaViewModel
+            {
+                Id = areaDto.Id,
+                Title = areaDto.Title,
+                Order = areaDto.Order,
+                Created = areaDto.Created,
+                Updated = areaDto.Updated,
+            };
+
+            return Ok(result);
         }
 
         /// <summary>
