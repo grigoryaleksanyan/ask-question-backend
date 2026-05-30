@@ -91,6 +91,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 .AsNoTracking()
                 .Include(q => q.SpeakerUser)
                     .ThenInclude(u => u!.UserDetails)
+                .Include(q => q.AreaEntity)
                 .OrderByDescending(question => question.Likes)
                     .ThenByDescending(question => question.Created)
                 .Take(5)

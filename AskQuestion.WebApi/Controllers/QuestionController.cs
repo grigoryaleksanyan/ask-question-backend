@@ -221,6 +221,7 @@ namespace AskQuestion.WebApi.Controllers
                 Author = questionCreateModel.Author,
                 SpeakerId = questionCreateModel.SpeakerId,
                 Text = questionCreateModel.Text,
+                AreaId = questionCreateModel.AreaId,
             };
 
             Guid id = await _questionRepository.CreateAsync(questionCreateDto);
