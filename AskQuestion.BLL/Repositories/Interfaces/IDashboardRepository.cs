@@ -4,5 +4,5 @@ namespace AskQuestion.BLL.Repositories.Interfaces;
 
 public interface IDashboardRepository
 {
-    Task<DashboardSummaryDto> GetSummaryAsync(int periodDays);
+    Task<DashboardSummaryDto> GetSummaryAsync(int periodDays, Guid? speakerId = null);
 }

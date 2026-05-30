@@ -19,14 +19,16 @@ public class DashboardController : ControllerBase
 
     [HttpGet("Summary")]
     [Authorize(Roles = UserStringRoles.ADMINISTRATORS_ONLY)]
-    public async Task<ActionResult<DashboardSummaryDto>> Summary([FromQuery] int periodDays = 30)
+    public async Task<ActionResult<DashboardSummaryDto>> Summary(
+        [FromQuery] int periodDays = 30,
+        [FromQuery] Guid? speakerId = null)
     {
         if (periodDays < 1)
         {
             periodDays = 30;
         }
 
-        var result = await _dashboardRepository.GetSummaryAsync(periodDays);
+        var result = await _dashboardRepository.GetSummaryAsync(periodDays, speakerId);
 
         return Ok(result);
     }

@@ -8,19 +8,38 @@ namespace AskQuestion.BLL.Repositories.Implementations;
 
 public class DashboardRepository(DataContext dataContext) : IDashboardRepository
 {
-    public async Task<DashboardSummaryDto> GetSummaryAsync(int periodDays)
+    public async Task<DashboardSummaryDto> GetSummaryAsync(int periodDays, Guid? speakerId = null)
     {
         var now = DateTimeOffset.UtcNow;
         var periodStart = now.AddDays(-periodDays);
 
-        var totalQuestions = await dataContext.Questions.CountAsync();
-        var answeredQuestions = await dataContext.Questions
-            .CountAsync(q => q.Status == (int)QuestionStatus.Answered);
-        var totalFeedback = await dataContext.Feedback.CountAsync();
-        var totalAreas = await dataContext.Areas.CountAsync();
-
-        var byStatus = await dataContext.Questions
+        var baseQuery = dataContext.Questions
             .AsNoTracking()
+            .Where(q => q.Created >= periodStart);
+
+        if (speakerId.HasValue)
+        {
+            baseQuery = baseQuery.Where(q => q.SpeakerId == speakerId.Value);
+        }
+
+        var totalQuestions = await baseQuery.CountAsync();
+        var answeredQuestions = await baseQuery
+            .CountAsync(q => q.Status == (int)QuestionStatus.Answered);
+        var unansweredQuestions = totalQuestions - answeredQuestions;
+
+        var avgResponseHours = await baseQuery
+            .Where(q => q.Answered.HasValue)
+            .Select(q => (q.Answered!.Value - q.Created).TotalHours)
+            .DefaultIfEmpty(0)
+            .AverageAsync();
+
+        var totalFeedback = await dataContext.Feedback
+            .CountAsync(f => f.Created >= periodStart);
+        var totalAreas = await dataContext.Areas.CountAsync();
+        var questionsWithoutSpeaker = await baseQuery
+            .CountAsync(q => !q.SpeakerId.HasValue);
+
+        var byStatus = await baseQuery
             .GroupBy(q => q.Status)
             .Select(g => new StatusDistributionDto
             {
@@ -29,15 +48,12 @@ public class DashboardRepository(DataContext dataContext) : IDashboardRepository
             })
             .ToListAsync();
 
-        var createdDates = await dataContext.Questions
-            .AsNoTracking()
-            .Where(q => q.Created >= periodStart)
+        var createdDates = await baseQuery
             .Select(q => q.Created)
             .ToListAsync();
 
-        var answeredDates = await dataContext.Questions
-            .AsNoTracking()
-            .Where(q => q.Answered.HasValue && q.Answered.Value >= periodStart)
+        var answeredDates = await baseQuery
+            .Where(q => q.Answered.HasValue)
             .Select(q => q.Answered!.Value)
             .ToListAsync();
 
@@ -56,61 +72,126 @@ public class DashboardRepository(DataContext dataContext) : IDashboardRepository
             });
         }
 
-        var byArea = await dataContext.Questions
-            .AsNoTracking()
+        var byArea = await baseQuery
             .Include(q => q.AreaEntity)
             .Where(q => q.AreaId.HasValue)
-            .GroupBy(q => q.AreaId!.Value)
+            .GroupBy(q => q.AreaEntity!.Title)
             .Select(g => new AreaDistributionDto
             {
-                AreaTitle = g.First().AreaEntity != null ? g.First().AreaEntity.Title : "Unknown",
+                AreaTitle = g.Key,
                 Count = g.Count(),
             })
             .OrderByDescending(g => g.Count)
             .ToListAsync();
 
-        var speakerGroups = await dataContext.Questions
-            .AsNoTracking()
-            .Where(q => q.Status == (int)QuestionStatus.Answered && q.SpeakerId.HasValue)
-            .GroupBy(q => q.SpeakerId!.Value)
-            .Select(g => new { SpeakerId = g.Key, Count = g.Count() })
-            .OrderByDescending(g => g.Count)
-            .Take(5)
-            .ToListAsync();
-
-        var speakerIds = speakerGroups.Select(g => g.SpeakerId).ToList();
-        var speakerUsers = await dataContext.Users
-            .AsNoTracking()
-            .Include(u => u.UserDetails)
-            .Where(u => speakerIds.Contains(u.Id))
-            .ToDictionaryAsync(u => u.Id, u => u.UserDetails != null ? u.UserDetails.GetFullName() : u.Login);
-
-        var topSpeakers = speakerGroups.Select(g => new SpeakerStatsDto
-        {
-            SpeakerName = speakerUsers.GetValueOrDefault(g.SpeakerId, "Unknown"),
-            AnsweredCount = g.Count,
-        }).ToList();
-
+        var questionIds = await baseQuery.Select(q => q.Id).ToListAsync();
         var totalLikes = await dataContext.QuestionVotes
-            .CountAsync(v => v.VoteType == VoteType.Like);
+            .Where(v => questionIds.Contains(v.QuestionId) && v.VoteType == VoteType.Like)
+            .CountAsync();
         var totalDislikes = await dataContext.QuestionVotes
-            .CountAsync(v => v.VoteType == VoteType.Dislike);
+            .Where(v => questionIds.Contains(v.QuestionId) && v.VoteType == VoteType.Dislike)
+            .CountAsync();
+
+        var topSpeakers = await BuildTopSpeakersAsync(baseQuery, speakerId);
+        var speakerAreas = await BuildSpeakerAreasAsync(baseQuery);
 
         return new DashboardSummaryDto
         {
             TotalQuestions = totalQuestions,
             AnsweredQuestions = answeredQuestions,
+            UnansweredQuestions = unansweredQuestions,
+            AverageResponseTimeHours = Math.Round(avgResponseHours, 1),
             TotalFeedback = totalFeedback,
             TotalAreas = totalAreas,
+            QuestionsWithoutSpeaker = questionsWithoutSpeaker,
             ByStatus = byStatus,
             Timeline = timeline,
             ByArea = byArea,
             TopSpeakers = topSpeakers,
+            SpeakerAreas = speakerAreas,
             Votes = new VotesSummaryDto
             {
                 TotalLikes = totalLikes,
                 TotalDislikes = totalDislikes,
             },
         };
+    }
+
+    private async Task<List<SpeakerProductivityDto>> BuildTopSpeakersAsync(
+        IQueryable<DAL.Entities.Question> baseQuery, Guid? speakerId)
+    {
+        var takeCount = speakerId.HasValue ? 1 : 5;
+
+        var speakerGroups = await baseQuery
+            .Where(q => q.SpeakerId.HasValue)
+            .GroupBy(q => q.SpeakerId!.Value)
+            .Select(g => new
+            {
+                SpeakerId = g.Key,
+                Assigned = g.Count(),
+                Answered = g.Count(q => q.Status == (int)QuestionStatus.Answered),
+                AvgHours = g
+                    .Where(q => q.Answered.HasValue)
+                    .Select(q => (q.Answered!.Value - q.Created).TotalHours)
+                    .DefaultIfEmpty(0)
+                    .Average(),
+            })
+            .OrderByDescending(g => g.Answered)
+            .Take(takeCount)
+            .ToListAsync();
+
+        var speakerIds = speakerGroups.Select(g => g.SpeakerId).ToList();
+        var speakerNames = await dataContext.Users
+            .AsNoTracking()
+            .Include(u => u.UserDetails)
+            .Where(u => speakerIds.Contains(u.Id) && u.UserDetails != null && !u.UserDetails.IsDeleted)
+            .ToDictionaryAsync(
+                u => u.Id,
+                u => u.UserDetails!.GetFullName());
+
+        return speakerGroups.Select(g => new SpeakerProductivityDto
+        {
+            SpeakerId = g.SpeakerId,
+            SpeakerName = speakerNames.GetValueOrDefault(g.SpeakerId, "Unknown"),
+            AssignedQuestions = g.Assigned,
+            AnsweredQuestions = g.Answered,
+            AnswerRate = g.Assigned > 0 ? Math.Round((double)g.Answered / g.Assigned * 100, 1) : 0,
+            AverageResponseHours = Math.Round(g.AvgHours, 1),
+        }).ToList();
+    }
+
+    private async Task<List<SpeakerAreaDto>> BuildSpeakerAreasAsync(
+        IQueryable<DAL.Entities.Question> baseQuery)
+    {
+        var rawData = await baseQuery
+            .Where(q => q.SpeakerId.HasValue && q.AreaId.HasValue)
+            .Select(q => new { q.SpeakerId, AreaTitle = q.AreaEntity != null ? q.AreaEntity.Title : "" })
+            .ToListAsync();
+
+        var grouped = rawData
+            .GroupBy(x => new { SpeakerId = x.SpeakerId!.Value, x.AreaTitle })
+            .Select(g => new SpeakerAreaDto
+            {
+                SpeakerId = g.Key.SpeakerId,
+                AreaTitle = g.Key.AreaTitle,
+                QuestionCount = g.Count(),
+            })
+            .ToList();
+
+        var speakerIds = grouped.Select(g => g.SpeakerId).Distinct().ToList();
+        var speakerNames = await dataContext.Users
+            .AsNoTracking()
+            .Include(u => u.UserDetails)
+            .Where(u => speakerIds.Contains(u.Id) && u.UserDetails != null && !u.UserDetails.IsDeleted)
+            .ToDictionaryAsync(
+                u => u.Id,
+                u => u.UserDetails!.GetFullName());
+
+        foreach (var item in grouped)
+        {
+            item.SpeakerName = speakerNames.GetValueOrDefault(item.SpeakerId, "Unknown");
+        }
+
+        return grouped;
     }
 }
