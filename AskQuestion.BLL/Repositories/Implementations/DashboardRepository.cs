@@ -27,11 +27,14 @@ public class DashboardRepository(DataContext dataContext) : IDashboardRepository
             .CountAsync(q => q.Status == (int)QuestionStatus.Answered);
         var unansweredQuestions = totalQuestions - answeredQuestions;
 
-        var avgResponseHours = await baseQuery
+        var answeredPairs = await baseQuery
             .Where(q => q.Answered.HasValue)
-            .Select(q => (q.Answered!.Value - q.Created).TotalHours)
-            .DefaultIfEmpty(0)
-            .AverageAsync();
+            .Select(q => new { q.Created, Answered = q.Answered!.Value })
+            .ToListAsync();
+
+        var avgResponseHours = answeredPairs.Count > 0
+            ? answeredPairs.Average(p => (p.Answered - p.Created).TotalHours)
+            : 0;
 
         var totalFeedback = await dataContext.Feedback
             .CountAsync(f => f.Created >= periodStart);
@@ -122,7 +125,7 @@ public class DashboardRepository(DataContext dataContext) : IDashboardRepository
     {
         var takeCount = speakerId.HasValue ? 1 : 5;
 
-        var speakerGroups = await baseQuery
+        var speakerAggregates = await baseQuery
             .Where(q => q.SpeakerId.HasValue)
             .GroupBy(q => q.SpeakerId!.Value)
             .Select(g => new
@@ -130,17 +133,24 @@ public class DashboardRepository(DataContext dataContext) : IDashboardRepository
                 SpeakerId = g.Key,
                 Assigned = g.Count(),
                 Answered = g.Count(q => q.Status == (int)QuestionStatus.Answered),
-                AvgHours = g
-                    .Where(q => q.Answered.HasValue)
-                    .Select(q => (q.Answered!.Value - q.Created).TotalHours)
-                    .DefaultIfEmpty(0)
-                    .Average(),
             })
             .OrderByDescending(g => g.Answered)
             .Take(takeCount)
             .ToListAsync();
 
-        var speakerIds = speakerGroups.Select(g => g.SpeakerId).ToList();
+        var speakerIds = speakerAggregates.Select(g => g.SpeakerId).ToList();
+
+        var speakerAnsweredDates = await baseQuery
+            .Where(q => q.SpeakerId.HasValue && speakerIds.Contains(q.SpeakerId!.Value) && q.Answered.HasValue)
+            .Select(q => new { SpeakerId = q.SpeakerId!.Value, q.Created, Answered = q.Answered!.Value })
+            .ToListAsync();
+
+        var avgHoursBySpeaker = speakerAnsweredDates
+            .GroupBy(x => x.SpeakerId)
+            .ToDictionary(
+                g => g.Key,
+                g => g.Average(p => (p.Answered - p.Created).TotalHours));
+
         var speakerNames = await dataContext.Users
             .AsNoTracking()
             .Include(u => u.UserDetails)
@@ -149,14 +159,14 @@ public class DashboardRepository(DataContext dataContext) : IDashboardRepository
                 u => u.Id,
                 u => u.UserDetails!.GetFullName());
 
-        return speakerGroups.Select(g => new SpeakerProductivityDto
+        return speakerAggregates.Select(g => new SpeakerProductivityDto
         {
             SpeakerId = g.SpeakerId,
             SpeakerName = speakerNames.GetValueOrDefault(g.SpeakerId, "Unknown"),
             AssignedQuestions = g.Assigned,
             AnsweredQuestions = g.Answered,
             AnswerRate = g.Assigned > 0 ? Math.Round((double)g.Answered / g.Assigned * 100, 1) : 0,
-            AverageResponseHours = Math.Round(g.AvgHours, 1),
+            AverageResponseHours = Math.Round(avgHoursBySpeaker.GetValueOrDefault(g.SpeakerId, 0), 1),
         }).ToList();
     }
 
