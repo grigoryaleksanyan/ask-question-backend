@@ -19,6 +19,21 @@ namespace AskQuestion.WebApi.Controllers
             _speakerRepository = speakerRepository ?? throw new ArgumentNullException(nameof(speakerRepository));
         }
 
+        [HttpGet("GetAllPublic")]
+        public async Task<ActionResult<IEnumerable<SpeakerPublicViewModel>>> GetAllPublic()
+        {
+            var speakerDtos = await _speakerRepository.GetAllAsync();
+
+            IEnumerable<SpeakerPublicViewModel> result = speakerDtos.Select(dto => new SpeakerPublicViewModel
+            {
+                Id = dto.Id,
+                FirstName = dto.FirstName,
+                LastName = dto.LastName,
+            });
+
+            return Ok(result);
+        }
+
         [HttpGet("GetAll")]
         [Authorize(Roles = UserStringRoles.ADMINISTRATORS_ONLY)]
         public async Task<ActionResult<IEnumerable<SpeakerViewModel>>> GetAll()
