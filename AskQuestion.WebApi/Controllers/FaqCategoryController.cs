@@ -76,6 +76,36 @@ namespace AskQuestion.WebApi.Controllers
         }
 
         /// <summary>
+        /// Получить список всех категорий с записями (для админки).
+        /// </summary>
+        /// <response code='200'>Список всех категорий.</response>
+        [HttpGet("GetAllWithEntriesForAdmin")]
+        [Authorize(Roles = UserStringRoles.ADMINISTRATORS_ONLY)]
+        public async Task<ActionResult<IEnumerable<FaqCategoryWithEntriesViewModel>>> GetAllWithEntriesForAdmin()
+        {
+            var faqCategoryDtos = await _faqCategoryRepository.GetAllWithEntriesForAdminAsync();
+
+            IEnumerable<FaqCategoryWithEntriesViewModel> result = faqCategoryDtos.Select(faqCategoryDto => new FaqCategoryWithEntriesViewModel
+            {
+                Id = faqCategoryDto.Id,
+                Name = faqCategoryDto.Name,
+                Order = faqCategoryDto.Order,
+                Created = faqCategoryDto.Created,
+                Updated = faqCategoryDto.Updated,
+                Entries = faqCategoryDto.Entries.Select(entry => new FaqEntryViewModel()
+                {
+                    Id = entry.Id,
+                    Question = entry.Question,
+                    Answer = entry.Answer,
+                    Created = entry.Created,
+                    Updated = entry.Updated
+                }).ToList()
+            });
+
+            return Ok(result);
+        }
+
+        /// <summary>
         /// Получить категорию по Id.
         /// </summary>
         /// <param name="id">Id категории.</param>

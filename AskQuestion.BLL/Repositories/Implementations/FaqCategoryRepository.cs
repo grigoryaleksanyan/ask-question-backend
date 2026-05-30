@@ -57,6 +57,36 @@ namespace AskQuestion.BLL.Repositories.Implementations
             return faqCategoryDtos;
         }
 
+        public async Task<IEnumerable<FaqCategoryDto>> GetAllWithEntriesForAdminAsync()
+        {
+            IEnumerable<FaqCategoryDto> faqCategoryDtos = await dataContext.FaqCategories
+                .AsNoTracking()
+                .Include(faqCategory => faqCategory.FaqEntries)
+                .OrderBy(faqCategory => faqCategory.Order)
+                .Select(faqCategory => new FaqCategoryDto
+                {
+                    Id = faqCategory.Id,
+                    Name = faqCategory.Name,
+                    Order = faqCategory.Order,
+                    Created = faqCategory.Created,
+                    Updated = faqCategory.Updated,
+                    Entries = faqCategory.FaqEntries.Select(entry => new FaqEntryDto()
+                    {
+                        Id = entry.Id,
+                        Question = entry.Question,
+                        Answer = entry.Answer,
+                        Order = entry.Order,
+                        Created = entry.Created,
+                        Updated = entry.Updated
+                    })
+                    .OrderBy(entry => entry.Order)
+                    .ToList(),
+                })
+                .ToListAsync();
+
+            return faqCategoryDtos;
+        }
+
         public async Task<FaqCategoryDto?> GetByIdAsync(Guid id)
         {
             FaqCategory? faqCategory = await dataContext.FaqCategories

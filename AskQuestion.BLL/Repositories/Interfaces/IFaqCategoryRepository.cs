@@ -6,6 +6,7 @@ namespace AskQuestion.BLL.Repositories.Interfaces
     {
         Task<IEnumerable<FaqCategoryDto>> GetAllAsync();
         Task<IEnumerable<FaqCategoryDto>> GetAllWithEntriesAsync();
+        Task<IEnumerable<FaqCategoryDto>> GetAllWithEntriesForAdminAsync();
 
         Task<FaqCategoryDto?> GetByIdAsync(Guid id);
 
