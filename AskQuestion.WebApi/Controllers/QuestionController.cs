@@ -61,12 +61,12 @@ namespace AskQuestion.WebApi.Controllers
             int page = 1,
             int pageSize = 10,
             int? status = null,
-            string? speaker = null,
+            Guid? speakerId = null,
             string? area = null,
             string? search = null,
             string sortOrder = "desc")
         {
-            var result = await _questionRepository.GetAllAsync(page, pageSize, status, speaker, area, search, sortOrder);
+            var result = await _questionRepository.GetAllAsync(page, pageSize, status, speakerId, area, search, sortOrder);
 
             PaginatedResult<QuestionViewModel> response = new()
             {
@@ -76,7 +76,8 @@ namespace AskQuestion.WebApi.Controllers
                     Text = question.Text,
                     Author = question.Author,
                     Area = question.Area,
-                    Speaker = question.Speaker,
+                    SpeakerId = question.SpeakerId,
+                    SpeakerName = question.SpeakerName,
                     Likes = question.Likes,
                     Dislikes = question.Dislikes,
                     Views = question.Views,
@@ -107,7 +108,8 @@ namespace AskQuestion.WebApi.Controllers
                 Text = question.Text,
                 Author = question.Author,
                 Area = question.Area,
-                Speaker = question.Speaker,
+                SpeakerId = question.SpeakerId,
+                SpeakerName = question.SpeakerName,
                 Likes = question.Likes,
                 Dislikes = question.Dislikes,
                 Views = question.Views,
@@ -148,7 +150,8 @@ namespace AskQuestion.WebApi.Controllers
                 Text = question.Text,
                 Author = question.Author,
                 Area = question.Area,
-                Speaker = question.Speaker,
+                SpeakerId = question.SpeakerId,
+                SpeakerName = question.SpeakerName,
                 Likes = question.Likes,
                 Dislikes = question.Dislikes,
                 Views = question.Views + 1,
@@ -213,7 +216,7 @@ namespace AskQuestion.WebApi.Controllers
             QuestionCreateDto questionCreateDto = new()
             {
                 Author = questionCreateModel.Author,
-                Speaker = questionCreateModel.Speaker,
+                SpeakerId = questionCreateModel.SpeakerId,
                 Text = questionCreateModel.Text,
             };
 
@@ -248,7 +251,7 @@ namespace AskQuestion.WebApi.Controllers
                 Text = questionUpdateModel.Text,
                 Author = questionUpdateModel.Author,
                 Area = questionUpdateModel.Area,
-                Speaker = questionUpdateModel.Speaker,
+                SpeakerId = questionUpdateModel.SpeakerId,
             };
 
             await _questionRepository.UpdateAsync(id, questionUpdateDto);

@@ -11,7 +11,6 @@ namespace AskQuestion.WebApi.Models.Request.Question
 
         public string? Area { get; set; }
 
-        [Required(AllowEmptyStrings = false, ErrorMessage = "Спикер должен быть указан.")]
-        public string Speaker { get; set; } = string.Empty;
+        public Guid? SpeakerId { get; set; }
     }
 }

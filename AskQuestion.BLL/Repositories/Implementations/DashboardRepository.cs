@@ -68,19 +68,27 @@ public class DashboardRepository(DataContext dataContext) : IDashboardRepository
             .OrderByDescending(g => g.Count)
             .ToListAsync();
 
-        var topSpeakers = await dataContext.Questions
+        var speakerGroups = await dataContext.Questions
             .AsNoTracking()
-            .Where(q => q.Status == (int)QuestionStatus.Answered
-                     && q.Speaker != string.Empty)
-            .GroupBy(q => q.Speaker)
-            .Select(g => new SpeakerStatsDto
-            {
-                SpeakerName = g.Key,
-                AnsweredCount = g.Count(),
-            })
-            .OrderByDescending(g => g.AnsweredCount)
+            .Where(q => q.Status == (int)QuestionStatus.Answered && q.SpeakerId.HasValue)
+            .GroupBy(q => q.SpeakerId!.Value)
+            .Select(g => new { SpeakerId = g.Key, Count = g.Count() })
+            .OrderByDescending(g => g.Count)
             .Take(5)
             .ToListAsync();
+
+        var speakerIds = speakerGroups.Select(g => g.SpeakerId).ToList();
+        var speakerUsers = await dataContext.Users
+            .AsNoTracking()
+            .Include(u => u.UserDetails)
+            .Where(u => speakerIds.Contains(u.Id))
+            .ToDictionaryAsync(u => u.Id, u => u.UserDetails != null ? u.UserDetails.GetFullName() : u.Login);
+
+        var topSpeakers = speakerGroups.Select(g => new SpeakerStatsDto
+        {
+            SpeakerName = speakerUsers.GetValueOrDefault(g.SpeakerId, "Unknown"),
+            AnsweredCount = g.Count,
+        }).ToList();
 
         var totalLikes = await dataContext.QuestionVotes
             .CountAsync(v => v.VoteType == VoteType.Like);

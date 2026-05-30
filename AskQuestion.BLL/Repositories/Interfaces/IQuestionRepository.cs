@@ -10,7 +10,7 @@ namespace AskQuestion.BLL.Repositories
             int page = 1,
             int pageSize = 10,
             int? status = null,
-            string? speaker = null,
+            Guid? speakerId = null,
             string? area = null,
             string? search = null,
             string sortOrder = "desc");

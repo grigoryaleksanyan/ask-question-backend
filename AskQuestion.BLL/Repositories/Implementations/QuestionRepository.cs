@@ -13,7 +13,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
             int page = 1,
             int pageSize = 10,
             int? status = null,
-            string? speaker = null,
+            Guid? speakerId = null,
             string? area = null,
             string? search = null,
             string sortOrder = "desc")
@@ -21,16 +21,19 @@ namespace AskQuestion.BLL.Repositories.Implementations
             pageSize = Math.Clamp(pageSize, 1, 50);
             page = Math.Max(page, 1);
 
-            IQueryable<Question> query = dataContext.Questions.AsNoTracking();
+            IQueryable<Question> query = dataContext.Questions
+                .AsNoTracking()
+                .Include(q => q.SpeakerUser)
+                    .ThenInclude(u => u!.UserDetails);
 
             if (status.HasValue)
             {
                 query = query.Where(q => q.Status == status.Value);
             }
 
-            if (!string.IsNullOrWhiteSpace(speaker))
+            if (speakerId.HasValue)
             {
-                query = query.Where(q => q.Speaker == speaker);
+                query = query.Where(q => q.SpeakerId == speakerId.Value);
             }
 
             if (!string.IsNullOrWhiteSpace(area))
@@ -50,24 +53,26 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 ? query.OrderBy(q => q.Created)
                 : query.OrderByDescending(q => q.Created);
 
-            List<QuestionDto> items = await query
+            List<Question> questions = await query
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .Select(q => new QuestionDto
-                {
-                    Id = q.Id,
-                    Text = q.Text,
-                    Author = q.Author,
-                    Area = q.Area,
-                    Speaker = q.Speaker,
-                    Likes = q.Likes,
-                    Dislikes = q.Dislikes,
-                    Views = q.Views,
-                    Status = q.Status,
-                    Created = q.Created,
-                    Answered = q.Answered,
-                })
                 .ToListAsync();
+
+            List<QuestionDto> items = questions.Select(q => new QuestionDto
+            {
+                Id = q.Id,
+                Text = q.Text,
+                Author = q.Author,
+                Area = q.Area,
+                SpeakerId = q.SpeakerId,
+                SpeakerName = q.SpeakerUser?.UserDetails?.GetFullName(),
+                Likes = q.Likes,
+                Dislikes = q.Dislikes,
+                Views = q.Views,
+                Status = q.Status,
+                Created = q.Created,
+                Answered = q.Answered,
+            }).ToList();
 
             return new PaginatedResult<QuestionDto>
             {
@@ -80,34 +85,40 @@ namespace AskQuestion.BLL.Repositories.Implementations
 
         public async Task<IEnumerable<QuestionDto>> GetPopularQuestionsAsync()
         {
-            IEnumerable<QuestionDto> questions = await dataContext.Questions
+            List<Question> questions = await dataContext.Questions
                 .AsNoTracking()
+                .Include(q => q.SpeakerUser)
+                    .ThenInclude(u => u!.UserDetails)
                 .OrderByDescending(question => question.Likes)
                     .ThenByDescending(question => question.Created)
                 .Take(5)
-                .Select(question => new QuestionDto
-                {
-                    Id = question.Id,
-                    Text = question.Text,
-                    Author = question.Author,
-                    Area = question.Area,
-                    Speaker = question.Speaker,
-                    Likes = question.Likes,
-                    Dislikes = question.Dislikes,
-                    Views = question.Views,
-                    Status = question.Status,
-                    Created = question.Created,
-                    Answered = question.Answered
-                })
                 .ToListAsync();
 
-            return questions;
+            IEnumerable<QuestionDto> result = questions.Select(q => new QuestionDto
+            {
+                Id = q.Id,
+                Text = q.Text,
+                Author = q.Author,
+                Area = q.Area,
+                SpeakerId = q.SpeakerId,
+                SpeakerName = q.SpeakerUser?.UserDetails?.GetFullName(),
+                Likes = q.Likes,
+                Dislikes = q.Dislikes,
+                Views = q.Views,
+                Status = q.Status,
+                Created = q.Created,
+                Answered = q.Answered
+            });
+
+            return result;
         }
 
         public async Task<QuestionDto?> GetByIdAsync(Guid id)
         {
             Question? question = await dataContext.Questions
                 .AsNoTracking()
+                .Include(q => q.SpeakerUser)
+                    .ThenInclude(u => u!.UserDetails)
                 .FirstOrDefaultAsync(q => q.Id == id);
 
             if (question == default)
@@ -121,7 +132,8 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 Text = question.Text,
                 Author = question.Author,
                 Area = question.Area,
-                Speaker = question.Speaker,
+                SpeakerId = question.SpeakerId,
+                SpeakerName = question.SpeakerUser?.UserDetails?.GetFullName(),
                 Likes = question.Likes,
                 Dislikes = question.Dislikes,
                 Views = question.Views,
@@ -140,7 +152,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 Text = questionCreateDto.Text,
                 Author = questionCreateDto.Author,
                 Area = questionCreateDto.Area,
-                Speaker = questionCreateDto.Speaker,
+                SpeakerId = questionCreateDto.SpeakerId,
                 Created = DateTimeOffset.UtcNow,
             };
 
@@ -153,7 +165,6 @@ namespace AskQuestion.BLL.Repositories.Implementations
         public async Task UpdateAsync(Guid id, QuestionUpdateDto questionUpdateDto)
         {
             Question? question = await dataContext.Questions
-                .AsNoTracking()
                 .FirstOrDefaultAsync(q => q.Id == id);
 
             if (question == default)
@@ -164,7 +175,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
             question.Text = questionUpdateDto.Text;
             question.Author = questionUpdateDto.Author;
             question.Area = questionUpdateDto.Area;
-            question.Speaker = questionUpdateDto.Speaker;
+            question.SpeakerId = questionUpdateDto.SpeakerId;
 
             await dataContext.SaveChangesAsync();
         }
@@ -172,7 +183,6 @@ namespace AskQuestion.BLL.Repositories.Implementations
         public async Task DeleteAsync(Guid id)
         {
             Question? question = await dataContext.Questions
-                .AsNoTracking()
                 .FirstOrDefaultAsync(q => q.Id == id);
 
             if (question == default)
