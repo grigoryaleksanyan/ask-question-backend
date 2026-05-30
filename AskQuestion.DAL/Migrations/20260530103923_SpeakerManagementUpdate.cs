@@ -50,24 +50,6 @@ namespace AskQuestion.DAL.Migrations
                 type: "uuid",
                 nullable: true);
 
-            migrationBuilder.InsertData(
-                table: "UserDetails",
-                columns: new[] { "Id", "AdditionalInfo", "Сreated", "Email", "FirstName", "IsDeleted", "LastName", "Patronymic", "Position", "Updated", "UserId" },
-                values: new object[] { new Guid("00000000-0000-0000-0000-000000000002"), null, new DateTimeOffset(new DateTime(2023, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "admin@askquestion.local", "Admin", false, "Admin", null, null, null, new Guid("00000000-0000-0000-0000-000000000001") });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Questions_SpeakerId",
-                table: "Questions",
-                column: "SpeakerId");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Questions_Users_SpeakerId",
-                table: "Questions",
-                column: "SpeakerId",
-                principalTable: "Users",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.SetNull);
-
             migrationBuilder.Sql(@"
                 UPDATE ""UserDetails""
                 SET ""FirstName"" = split_part(""FullName"", ' ', 1),
@@ -99,6 +81,24 @@ namespace AskQuestion.DAL.Migrations
             migrationBuilder.DropColumn(
                 name: "Speaker",
                 table: "Questions");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Questions_SpeakerId",
+                table: "Questions",
+                column: "SpeakerId");
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Questions_Users_SpeakerId",
+                table: "Questions",
+                column: "SpeakerId",
+                principalTable: "Users",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.SetNull);
+
+            migrationBuilder.InsertData(
+                table: "UserDetails",
+                columns: new[] { "Id", "AdditionalInfo", "Сreated", "Email", "FirstName", "IsDeleted", "LastName", "Patronymic", "Position", "Updated", "UserId" },
+                values: new object[] { new Guid("00000000-0000-0000-0000-000000000002"), null, new DateTimeOffset(new DateTime(2023, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "admin@askquestion.local", "Admin", false, "Admin", null, null, null, new Guid("00000000-0000-0000-0000-000000000001") });
         }
 
         /// <inheritdoc />

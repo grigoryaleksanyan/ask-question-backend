@@ -74,8 +74,11 @@ namespace AskQuestion.BLL.Repositories.Implementations
             string login = await GenerateLoginAsync(speakerCreateDto.Email);
             string password = GeneratePassword();
 
+            Guid userId = Guid.NewGuid();
+
             User user = new()
             {
+                Id = userId,
                 Login = login,
                 Password = BCrypt.Net.BCrypt.HashPassword(password),
                 UserRoleId = (int)Core.Enums.UserRoles.Speaker,
@@ -84,7 +87,8 @@ namespace AskQuestion.BLL.Repositories.Implementations
 
             UserDetails userDetails = new()
             {
-                UserId = user.Id,
+                Id = Guid.NewGuid(),
+                UserId = userId,
                 FirstName = speakerCreateDto.FirstName,
                 LastName = speakerCreateDto.LastName,
                 Patronymic = speakerCreateDto.Patronymic,
