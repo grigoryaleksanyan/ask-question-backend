@@ -5,8 +5,6 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ������� ����������.
-
 builder.Services.AddControllers();
 
 builder.Services.ConfigureAuthentication(builder.Configuration);
@@ -17,13 +15,21 @@ builder.Services.AddDbContext<DataContext>(options => options.UseNpgsql(builder.
 
 builder.Services.ConfigureRepositories();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", builder =>
+    {
+        builder.WithOrigins("http://localhost:5000")
+               .AllowCredentials()
+               .AllowAnyHeader()
+               .AllowAnyMethod();
+    });
+});
+
 builder.Services.AddScoped<EnsureVisitorIdAttribute>();
 
 var app = builder.Build();
 
-builder.Services.AddCors();
-
-// �������� ��
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -32,18 +38,13 @@ using (var scope = app.Services.CreateScope())
     dbContext.Database.Migrate();
 }
 
-// �������� HTTP-��������.
-
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-app.UseCors(builder => builder.WithOrigins("http://localhost:5000")
-                        .AllowCredentials()
-                        .AllowAnyHeader()
-                        .AllowAnyMethod());
+app.UseCors("AllowFrontend");
 
 app.UseCookiePolicy(new CookiePolicyOptions
 {

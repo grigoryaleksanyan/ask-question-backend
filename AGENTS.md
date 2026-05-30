@@ -8,7 +8,7 @@
 
 ## Архитектура
 
-.NET 8, решение `ask-question-backend.sln`. Четыре проекта с линейной зависимостью:
+.NET 10, решение `ask-question-backend.sln`. Четыре проекта с линейной зависимостью:
 
 ```
 WebApi → BLL → Core
@@ -66,7 +66,7 @@ Cookie-аутентификация (`CookieAuthenticationDefaults.Authenticatio
 ## Несоответствия и особенности
 
 - **CORS**: `WithOrigins("http://localhost:8080")` — не совпадает с реальным портом frontend (5000)
-- **Dockerfile**: указан `net7.0` (base/SDK), а проект — `net8.0`. Dockerfile не обновлён после миграции с .NET 7 на 8
+- **Dockerfile**: обновлён до .NET 10.0 (base/SDK)
 - **Опечатка**: `GetCapctha` / `capctha` вместо `GetCaptcha` / `captcha` — в контроллере, хелпере и сессии
 - **Сессия**: используется `AddDistributedMemoryCache` + `AddSession` — только для хранения текста капчи
 - **Swagger**: доступен только в Development, XML-документация инжектируется (`GenerateDocumentationFile` + `NoWarn(1591)`)

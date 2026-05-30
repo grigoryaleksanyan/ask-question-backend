@@ -10,21 +10,22 @@ namespace AskQuestion.WebApi.Helpers
             int height = 48;
             int width = 160;
 
-            SKBitmap bitmap = new(width, height);
+            using var bitmap = new SKBitmap(width, height);
+            using var font = new SKFont(SKTypeface.Default, 32);
+            using var paint = new SKPaint { MaskFilter = SKMaskFilter.CreateBlur(SKBlurStyle.Inner, 4) };
 
-            using (SKPaint textPaint = new() { Typeface = SKTypeface.Default, TextAlign = SKTextAlign.Center, TextSize = 32 })
+            float textWidth = font.MeasureText(captchaText);
+            float x = (width - textWidth) / 2F;
+            float y = 35;
+
+            using (var bitmapCanvas = new SKCanvas(bitmap))
             {
-                textPaint.MaskFilter = SKMaskFilter.CreateBlur(SKBlurStyle.Inner, 4);
-
-                using (SKCanvas bitmapCanvas = new(bitmap))
-                {
-                    bitmapCanvas.Clear();
-                    bitmapCanvas.DrawText(captchaText, x: width / 2F, y: 35, textPaint);
-                }
+                bitmapCanvas.Clear();
+                bitmapCanvas.DrawText(captchaText, x, y, font, paint);
             }
 
-            var resultImage = SKImage.FromBitmap(bitmap);
-            var data = resultImage.Encode(SKEncodedImageFormat.Png, 100);
+            using var resultImage = SKImage.FromBitmap(bitmap);
+            using var data = resultImage.Encode(SKEncodedImageFormat.Png, 100);
 
             return "data:image;base64," + Convert.ToBase64String(data.ToArray());
         }

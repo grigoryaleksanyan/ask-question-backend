@@ -74,7 +74,7 @@ namespace AskQuestion.DAL
             (
                 new List<User>
                 {
-                    new() { Id = Guid.NewGuid(), Login = "Admin", UserRoleId = 1, Password = BCrypt.Net.BCrypt.HashPassword("Admin"), Created = DateTimeOffset.UtcNow },
+                    new() { Id = Guid.Parse("00000000-0000-0000-0000-000000000001"), Login = "Admin", UserRoleId = 1, Password = "$2a$11$q385hN2923xQ0sWnC9I84eaC4jNqSx8m9HzZgZYUxBjh9vBX8cr1S", Created = DateTimeOffset.Parse("2023-01-01T00:00:00+00:00") },
                 }
             );
 
