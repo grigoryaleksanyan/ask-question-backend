@@ -78,6 +78,23 @@ namespace AskQuestion.DAL
                 }
             );
 
+            modelBuilder.Entity<UserDetails>().HasData
+            (
+                new UserDetails
+                {
+                    Id = Guid.Parse("00000000-0000-0000-0000-000000000002"),
+                    UserId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                    FirstName = "Admin",
+                    LastName = "Admin",
+                    Patronymic = null,
+                    Position = null,
+                    Email = "admin@askquestion.local",
+                    AdditionalInfo = null,
+                    IsDeleted = false,
+                    Created = DateTimeOffset.Parse("2023-01-01T00:00:00+00:00"),
+                }
+            );
+
             modelBuilder.Entity<QuestionVote>(entity =>
             {
                 entity.HasKey(qv => new { qv.QuestionId, qv.VisitorId });
@@ -85,6 +102,14 @@ namespace AskQuestion.DAL
                     .WithMany()
                     .HasForeignKey(qv => qv.QuestionId)
                     .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<Question>(entity =>
+            {
+                entity.HasOne(q => q.SpeakerUser)
+                    .WithMany()
+                    .HasForeignKey(q => q.SpeakerId)
+                    .OnDelete(DeleteBehavior.SetNull);
             });
         }
     }
