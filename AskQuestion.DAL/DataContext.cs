@@ -110,6 +110,11 @@ namespace AskQuestion.DAL
                     .WithMany()
                     .HasForeignKey(q => q.SpeakerId)
                     .OnDelete(DeleteBehavior.SetNull);
+
+                entity.HasOne(q => q.AreaEntity)
+                    .WithMany()
+                    .HasForeignKey(q => q.AreaId)
+                    .OnDelete(DeleteBehavior.SetNull);
             });
         }
     }

@@ -58,11 +58,12 @@ public class DashboardRepository(DataContext dataContext) : IDashboardRepository
 
         var byArea = await dataContext.Questions
             .AsNoTracking()
-            .Where(q => q.Area != null && q.Area != string.Empty)
-            .GroupBy(q => q.Area!)
+            .Include(q => q.AreaEntity)
+            .Where(q => q.AreaId.HasValue)
+            .GroupBy(q => q.AreaId!.Value)
             .Select(g => new AreaDistributionDto
             {
-                AreaTitle = g.Key,
+                AreaTitle = g.First().AreaEntity != null ? g.First().AreaEntity.Title : "Unknown",
                 Count = g.Count(),
             })
             .OrderByDescending(g => g.Count)

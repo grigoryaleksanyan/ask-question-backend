@@ -62,11 +62,11 @@ namespace AskQuestion.WebApi.Controllers
             int pageSize = 10,
             int? status = null,
             Guid? speakerId = null,
-            string? area = null,
+            Guid? areaId = null,
             string? search = null,
             string sortOrder = "desc")
         {
-            var result = await _questionRepository.GetAllAsync(page, pageSize, status, speakerId, area, search, sortOrder);
+            var result = await _questionRepository.GetAllAsync(page, pageSize, status, speakerId, areaId, search, sortOrder);
 
             PaginatedResult<QuestionViewModel> response = new()
             {
@@ -75,7 +75,8 @@ namespace AskQuestion.WebApi.Controllers
                     Id = question.Id,
                     Text = question.Text,
                     Author = question.Author,
-                    Area = question.Area,
+                    AreaId = question.AreaId,
+                    AreaTitle = question.AreaTitle,
                     SpeakerId = question.SpeakerId,
                     SpeakerName = question.SpeakerName,
                     Likes = question.Likes,
@@ -107,7 +108,8 @@ namespace AskQuestion.WebApi.Controllers
                 Id = question.Id,
                 Text = question.Text,
                 Author = question.Author,
-                Area = question.Area,
+                AreaId = question.AreaId,
+                AreaTitle = question.AreaTitle,
                 SpeakerId = question.SpeakerId,
                 SpeakerName = question.SpeakerName,
                 Likes = question.Likes,
@@ -149,7 +151,8 @@ namespace AskQuestion.WebApi.Controllers
                 Id = question.Id,
                 Text = question.Text,
                 Author = question.Author,
-                Area = question.Area,
+                AreaId = question.AreaId,
+                AreaTitle = question.AreaTitle,
                 SpeakerId = question.SpeakerId,
                 SpeakerName = question.SpeakerName,
                 Likes = question.Likes,
@@ -250,7 +253,7 @@ namespace AskQuestion.WebApi.Controllers
                 Id = id,
                 Text = questionUpdateModel.Text,
                 Author = questionUpdateModel.Author,
-                Area = questionUpdateModel.Area,
+                AreaId = questionUpdateModel.AreaId,
                 SpeakerId = questionUpdateModel.SpeakerId,
             };
 

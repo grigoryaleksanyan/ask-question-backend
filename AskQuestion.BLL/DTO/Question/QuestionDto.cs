@@ -7,7 +7,8 @@ namespace AskQuestion.BLL.DTO.Question
         public Guid Id { get; set; }
         public string Text { get; set; } = string.Empty;
         public string? Author { get; set; }
-        public string? Area { get; set; }
+        public Guid? AreaId { get; set; }
+        public string? AreaTitle { get; set; }
         public Guid? SpeakerId { get; set; }
         public string? SpeakerName { get; set; }
         public int Views { get; set; }

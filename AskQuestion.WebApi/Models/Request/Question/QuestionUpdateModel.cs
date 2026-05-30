@@ -9,7 +9,7 @@ namespace AskQuestion.WebApi.Models.Request.Question
 
         public string? Author { get; set; }
 
-        public string? Area { get; set; }
+        public Guid? AreaId { get; set; }
 
         public Guid? SpeakerId { get; set; }
     }

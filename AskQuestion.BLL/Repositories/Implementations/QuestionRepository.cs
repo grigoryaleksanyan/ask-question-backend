@@ -14,7 +14,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
             int pageSize = 10,
             int? status = null,
             Guid? speakerId = null,
-            string? area = null,
+            Guid? areaId = null,
             string? search = null,
             string sortOrder = "desc")
         {
@@ -24,7 +24,8 @@ namespace AskQuestion.BLL.Repositories.Implementations
             IQueryable<Question> query = dataContext.Questions
                 .AsNoTracking()
                 .Include(q => q.SpeakerUser)
-                    .ThenInclude(u => u!.UserDetails);
+                    .ThenInclude(u => u!.UserDetails)
+                .Include(q => q.AreaEntity);
 
             if (status.HasValue)
             {
@@ -36,9 +37,9 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 query = query.Where(q => q.SpeakerId == speakerId.Value);
             }
 
-            if (!string.IsNullOrWhiteSpace(area))
+            if (areaId.HasValue)
             {
-                query = query.Where(q => q.Area == area);
+                query = query.Where(q => q.AreaId == areaId.Value);
             }
 
             if (!string.IsNullOrWhiteSpace(search))
@@ -63,7 +64,8 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 Id = q.Id,
                 Text = q.Text,
                 Author = q.Author,
-                Area = q.Area,
+                AreaId = q.AreaId,
+                AreaTitle = q.AreaEntity?.Title,
                 SpeakerId = q.SpeakerId,
                 SpeakerName = q.SpeakerUser?.UserDetails?.GetFullName(),
                 Likes = q.Likes,
@@ -99,7 +101,8 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 Id = q.Id,
                 Text = q.Text,
                 Author = q.Author,
-                Area = q.Area,
+                AreaId = q.AreaId,
+                AreaTitle = q.AreaEntity?.Title,
                 SpeakerId = q.SpeakerId,
                 SpeakerName = q.SpeakerUser?.UserDetails?.GetFullName(),
                 Likes = q.Likes,
@@ -119,6 +122,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 .AsNoTracking()
                 .Include(q => q.SpeakerUser)
                     .ThenInclude(u => u!.UserDetails)
+                .Include(q => q.AreaEntity)
                 .FirstOrDefaultAsync(q => q.Id == id);
 
             if (question == default)
@@ -131,7 +135,8 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 Id = question.Id,
                 Text = question.Text,
                 Author = question.Author,
-                Area = question.Area,
+                AreaId = question.AreaId,
+                AreaTitle = question.AreaEntity?.Title,
                 SpeakerId = question.SpeakerId,
                 SpeakerName = question.SpeakerUser?.UserDetails?.GetFullName(),
                 Likes = question.Likes,
@@ -151,7 +156,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
             {
                 Text = questionCreateDto.Text,
                 Author = questionCreateDto.Author,
-                Area = questionCreateDto.Area,
+                AreaId = questionCreateDto.AreaId,
                 SpeakerId = questionCreateDto.SpeakerId,
                 Created = DateTimeOffset.UtcNow,
             };
@@ -174,7 +179,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
 
             question.Text = questionUpdateDto.Text;
             question.Author = questionUpdateDto.Author;
-            question.Area = questionUpdateDto.Area;
+            question.AreaId = questionUpdateDto.AreaId;
             question.SpeakerId = questionUpdateDto.SpeakerId;
 
             await dataContext.SaveChangesAsync();
