@@ -55,9 +55,13 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 UserDetails = user.UserDetails is not null ? new UserDetailsDto
                 {
                     Id = user.UserDetails.Id,
-                    FullName = user.UserDetails.FullName,
+                    FirstName = user.UserDetails.FirstName,
+                    LastName = user.UserDetails.LastName,
+                    Patronymic = user.UserDetails.Patronymic,
+                    Position = user.UserDetails.Position,
                     Email = user.UserDetails.Email,
                     AdditionalInfo = user.UserDetails.AdditionalInfo,
+                    IsDeleted = user.UserDetails.IsDeleted,
                     Created = user.UserDetails.Created,
                     Updated = user.UserDetails.Updated,
                 } : null,
@@ -104,8 +108,11 @@ namespace AskQuestion.BLL.Repositories.Implementations
                     UserDetails userDetails = new()
                     {
                         UserId = user.Id,
+                        FirstName = userCreateDto.UserDetails.FirstName,
+                        LastName = userCreateDto.UserDetails.LastName,
+                        Patronymic = userCreateDto.UserDetails.Patronymic,
+                        Position = userCreateDto.UserDetails.Position,
                         Email = userCreateDto.UserDetails.Email,
-                        FullName = userCreateDto.UserDetails.FullName,
                         AdditionalInfo = userCreateDto.UserDetails.AdditionalInfo,
                         Created = DateTimeOffset.UtcNow,
                     };
@@ -123,7 +130,10 @@ namespace AskQuestion.BLL.Repositories.Implementations
                         UserDetails = new UserDetailsDto
                         {
                             Id = userDetails.Id,
-                            FullName = userDetails.FullName,
+                            FirstName = userDetails.FirstName,
+                            LastName = userDetails.LastName,
+                            Patronymic = userDetails.Patronymic,
+                            Position = userDetails.Position,
                             Email = userDetails.Email,
                             AdditionalInfo = userDetails.AdditionalInfo
                         },
@@ -133,7 +143,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
 
                     return userDto;
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     await transaction.RollbackAsync();
                     throw;
@@ -173,7 +183,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 .Select(u => new SpeakerDto
                 {
                     Id = u.Id,
-                    FullName = u.UserDetails != null ? u.UserDetails.FullName : u.Login,
+                    FullName = u.UserDetails != null ? u.UserDetails.GetFullName() : u.Login,
                 })
                 .ToListAsync();
 

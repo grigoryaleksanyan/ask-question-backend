@@ -2,30 +2,31 @@
 {
     public class UserDetails : BaseEntity
     {
-        /// <summary>
-		/// Id пользователя.
-		/// </summary>
         public Guid UserId { get; set; }
 
-        /// <summary>
-		/// ФИО пользователя.
-		/// </summary>
-        public string FullName { get; set; } = null!;
+        public string FirstName { get; set; } = null!;
 
-        /// <summary>
-		/// Email пользователя.
-		/// </summary>
+        public string LastName { get; set; } = null!;
+
+        public string? Patronymic { get; set; }
+
+        public string? Position { get; set; }
+
         public string Email { get; set; } = null!;
 
-        /// <summary>
-		/// Любая дополнительная информация.
-		/// </summary>
         public string? AdditionalInfo { get; set; }
+
+        public bool IsDeleted { get; set; }
 
         #region Навигационные свойства
 
         public User User { get; set; }
 
         #endregion
+
+        public string GetFullName()
+        {
+            return string.Join(" ", new[] { LastName, FirstName, Patronymic }.Where(s => !string.IsNullOrEmpty(s)));
+        }
     }
 }

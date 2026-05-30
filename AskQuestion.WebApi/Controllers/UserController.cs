@@ -61,9 +61,13 @@ namespace AskQuestion.WebApi.Controllers
                 UserDetails = userDto.UserDetails is not null ? new UserDetailsViewModel()
                 {
                     Id = userDto.UserDetails.Id,
-                    FullName = userDto.UserDetails.FullName,
+                    FirstName = userDto.UserDetails.FirstName,
+                    LastName = userDto.UserDetails.LastName,
+                    Patronymic = userDto.UserDetails.Patronymic,
+                    Position = userDto.UserDetails.Position,
                     Email = userDto.UserDetails.Email,
                     AdditionalInfo = userDto.UserDetails.AdditionalInfo,
+                    IsDeleted = userDto.UserDetails.IsDeleted,
                 } : null,
                 Created = userDto.Created,
                 Updated = userDto.Updated,
@@ -86,7 +90,10 @@ namespace AskQuestion.WebApi.Controllers
                 Password = speakerCreateModel.Password,
                 UserDetails = new UserDetailsCreateDto()
                 {
-                    FullName = speakerCreateModel.FullName,
+                    FirstName = speakerCreateModel.FirstName,
+                    LastName = speakerCreateModel.LastName,
+                    Patronymic = speakerCreateModel.Patronymic,
+                    Position = speakerCreateModel.Position,
                     Email = speakerCreateModel.Email,
                     AdditionalInfo = speakerCreateModel.AdditionalInfo,
                 }
@@ -102,9 +109,13 @@ namespace AskQuestion.WebApi.Controllers
                 UserDetails = new UserDetailsViewModel()
                 {
                     Id = userDto.UserDetails.Id,
-                    FullName = userDto.UserDetails.FullName,
+                    FirstName = userDto.UserDetails.FirstName,
+                    LastName = userDto.UserDetails.LastName,
+                    Patronymic = userDto.UserDetails.Patronymic,
+                    Position = userDto.UserDetails.Position,
                     Email = userDto.UserDetails.Email,
                     AdditionalInfo = userDto.UserDetails.AdditionalInfo,
+                    IsDeleted = userDto.UserDetails.IsDeleted,
                 },
                 Created = userDto.Created,
                 Updated = userDto.Updated,
