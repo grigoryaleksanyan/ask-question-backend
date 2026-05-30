@@ -5,7 +5,7 @@ namespace AskQuestion.WebApi.Helpers
 {
     public static class GenerateCaptcha
     {
-        public static string GetCaptchaBase64(string capcthaText)
+        public static string GetCaptchaBase64(string captchaText)
         {
             int height = 48;
             int width = 160;
@@ -19,7 +19,7 @@ namespace AskQuestion.WebApi.Helpers
                 using (SKCanvas bitmapCanvas = new(bitmap))
                 {
                     bitmapCanvas.Clear();
-                    bitmapCanvas.DrawText(capcthaText, x: width / 2F, y: 35, textPaint);
+                    bitmapCanvas.DrawText(captchaText, x: width / 2F, y: 35, textPaint);
                 }
             }
 
@@ -30,7 +30,7 @@ namespace AskQuestion.WebApi.Helpers
         }
 
 
-        public static string GetCapcthaText()
+        public static string GetCaptchaText()
         {
             string combinations = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 

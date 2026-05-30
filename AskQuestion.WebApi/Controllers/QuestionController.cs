@@ -41,13 +41,13 @@ namespace AskQuestion.WebApi.Controllers
         /// Получить изображение капчи для подачи вопроса.
         /// </summary>
         /// <response code='200'>Капча в Base64.</response>
-        [HttpGet("GetCapctha")]
-        public ActionResult<string> GetCapctha()
+        [HttpGet("GetCaptcha")]
+        public ActionResult<string> GetCaptcha()
         {
-            string capcthaText = GenerateCaptcha.GetCapcthaText();
-            string captcha = GenerateCaptcha.GetCaptchaBase64(capcthaText);
+            string captchaText = GenerateCaptcha.GetCaptchaText();
+            string captcha = GenerateCaptcha.GetCaptchaBase64(captchaText);
 
-            HttpContext.Session.SetString("capctha", capcthaText);
+            HttpContext.Session.SetString("captcha", captchaText);
 
             return Ok(captcha);
         }
@@ -198,14 +198,14 @@ namespace AskQuestion.WebApi.Controllers
         /// <summary>
 		/// Создать вопрос.
 		/// </summary>
-		/// <param name="capctha">Проверочный код с капчи.</param>
+		/// <param name="captcha">Проверочный код с капчи.</param>
 		/// <param name="questionCreateModel">Модель создания вопроса.</param>
 		/// <response code='200'>Id созданного вопроса.</response>
         [HttpPost("Create")]
-        public async Task<ActionResult<Guid>> Create(string capctha, QuestionCreateModel questionCreateModel)
+        public async Task<ActionResult<Guid>> Create(string captcha, QuestionCreateModel questionCreateModel)
         {
 
-            if (capctha != HttpContext.Session.GetString("capctha"))
+            if (captcha != HttpContext.Session.GetString("captcha"))
             {
                 return BadRequest("Неверно введена капча");
             }
