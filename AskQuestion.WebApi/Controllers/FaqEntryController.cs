@@ -82,9 +82,9 @@ namespace AskQuestion.WebApi.Controllers
 		/// Создать запись.
 		/// </summary>
         /// <param name="faqEntryCreateModel">Модель создания записи</param>
-		/// <response code='200'>Id созданной записи.</response>
+		/// <response code='200'>Созданная запись.</response>
         [HttpPost("Create")]
-        public async Task<ActionResult<Guid>> Create(FaqEntryCreateModel faqEntryCreateModel)
+        public async Task<ActionResult<FaqEntryViewModel>> Create(FaqEntryCreateModel faqEntryCreateModel)
         {
             FaqEntryCreateDto faqEntryCreateDto = new()
             {
@@ -94,9 +94,19 @@ namespace AskQuestion.WebApi.Controllers
                 Order = faqEntryCreateModel.Order,
             };
 
-            Guid id = await _faqEntryRepository.CreateAsync(faqEntryCreateDto);
+            var faqEntryDto = await _faqEntryRepository.CreateAsync(faqEntryCreateDto);
 
-            return CreatedAtAction(nameof(Create), id);
+            var result = new FaqEntryViewModel
+            {
+                Id = faqEntryDto.Id,
+                Question = faqEntryDto.Question,
+                Answer = faqEntryDto.Answer,
+                Order = faqEntryDto.Order,
+                Created = faqEntryDto.Created,
+                Updated = faqEntryDto.Updated,
+            };
+
+            return Ok(result);
         }
 
         /// <summary>

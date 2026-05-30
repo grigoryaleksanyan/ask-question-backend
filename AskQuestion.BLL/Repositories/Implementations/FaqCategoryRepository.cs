@@ -121,7 +121,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
             return faqCategoryDto;
         }
 
-        public async Task<Guid> CreateAsync(FaqCategoryCreateDto faqCategoryCreateDto)
+        public async Task<FaqCategoryDto> CreateAsync(FaqCategoryCreateDto faqCategoryCreateDto)
         {
             FaqCategory faqCategory = new()
             {
@@ -133,7 +133,15 @@ namespace AskQuestion.BLL.Repositories.Implementations
             await dataContext.AddAsync(faqCategory);
             await dataContext.SaveChangesAsync();
 
-            return faqCategory.Id;
+            return new FaqCategoryDto
+            {
+                Id = faqCategory.Id,
+                Name = faqCategory.Name,
+                Order = faqCategory.Order,
+                Created = faqCategory.Created,
+                Updated = faqCategory.Updated,
+                Entries = [],
+            };
         }
 
         public async Task UpdateAsync(FaqCategoryUpdateDto faqCategoryUpdateDto)

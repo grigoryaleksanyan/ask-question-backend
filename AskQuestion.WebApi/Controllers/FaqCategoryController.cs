@@ -148,10 +148,10 @@ namespace AskQuestion.WebApi.Controllers
 		/// Создать категорию.
 		/// </summary>
         /// <param name="faqCategoryCreateModel">Модель создания категории</param>
-		/// <response code='200'>Id созданной категории.</response>
+		/// <response code='200'>Созданная категория.</response>
         [HttpPost("Create")]
         [Authorize(Roles = UserStringRoles.ADMINISTRATORS_ONLY)]
-        public async Task<ActionResult<Guid>> Create(FaqCategoryCreateModel faqCategoryCreateModel)
+        public async Task<ActionResult<FaqCategoryViewModel>> Create(FaqCategoryCreateModel faqCategoryCreateModel)
         {
             FaqCategoryCreateDto faqCategoryCreateDto = new()
             {
@@ -159,9 +159,18 @@ namespace AskQuestion.WebApi.Controllers
                 Order = faqCategoryCreateModel.Order,
             };
 
-            Guid id = await _faqCategoryRepository.CreateAsync(faqCategoryCreateDto);
+            var faqCategoryDto = await _faqCategoryRepository.CreateAsync(faqCategoryCreateDto);
 
-            return CreatedAtAction(nameof(Create), id);
+            var result = new FaqCategoryViewModel
+            {
+                Id = faqCategoryDto.Id,
+                Name = faqCategoryDto.Name,
+                Order = faqCategoryDto.Order,
+                Created = faqCategoryDto.Created,
+                Updated = faqCategoryDto.Updated,
+            };
+
+            return Ok(result);
         }
 
         /// <summary>

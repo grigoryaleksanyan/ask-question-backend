@@ -10,7 +10,7 @@ namespace AskQuestion.BLL.Repositories.Interfaces
 
         Task<FaqCategoryDto?> GetByIdAsync(Guid id);
 
-        Task<Guid> CreateAsync(FaqCategoryCreateDto faqCategoryCreateDto);
+        Task<FaqCategoryDto> CreateAsync(FaqCategoryCreateDto faqCategoryCreateDto);
 
         Task UpdateAsync(FaqCategoryUpdateDto faqCategoryUpdateDto);
 

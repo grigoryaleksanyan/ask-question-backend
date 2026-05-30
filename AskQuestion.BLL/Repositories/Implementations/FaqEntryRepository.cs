@@ -48,7 +48,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
             return faqEntryDto;
         }
 
-        public async Task<Guid> CreateAsync(FaqEntryCreateDto faqEntryCreateDto)
+        public async Task<FaqEntryDto> CreateAsync(FaqEntryCreateDto faqEntryCreateDto)
         {
             FaqEntry faqEntry = new()
             {
@@ -62,7 +62,15 @@ namespace AskQuestion.BLL.Repositories.Implementations
             await dataContext.AddAsync(faqEntry);
             await dataContext.SaveChangesAsync();
 
-            return faqEntry.Id;
+            return new FaqEntryDto
+            {
+                Id = faqEntry.Id,
+                Question = faqEntry.Question,
+                Answer = faqEntry.Answer,
+                Order = faqEntry.Order,
+                Created = faqEntry.Created,
+                Updated = faqEntry.Updated,
+            };
         }
 
         public async Task UpdateAsync(FaqEntryUpdateDto faqEntryUpdateDto)
