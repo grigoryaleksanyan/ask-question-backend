@@ -9,9 +9,6 @@ using System.Security.Claims;
 
 namespace AskQuestion.WebApi.Controllers
 {
-    /// <summary>
-    /// Контроллер пользователя.
-    /// </summary>
     [Route("api/User")]
     [ApiController]
     public class UserController : ControllerBase
@@ -23,9 +20,6 @@ namespace AskQuestion.WebApi.Controllers
             _userRepository = userRepository;
         }
 
-        /// <summary>
-        /// Получить данные текущего пользователя.
-        /// </summary>
         [HttpGet("GetUserData")]
         [Authorize(Roles = UserStringRoles.ADMINISTRATORS_AND_SPEAKERS)]
         public async Task<ActionResult<UserViewModel>> GetUserData()
@@ -76,58 +70,6 @@ namespace AskQuestion.WebApi.Controllers
             return Ok(userViewModel);
         }
 
-        /// <summary>
-        /// Создать спикера.
-        /// </summary>
-        /// <param name="speakerCreateModel">Модель создания спикера.</param>
-        [HttpPost("CreateSpeaker")]
-        [Authorize(Roles = UserStringRoles.ADMINISTRATORS_ONLY)]
-        public async Task<ActionResult<UserViewModel>> CreateSpeaker(SpeakerCreateModel speakerCreateModel)
-        {
-            UserCreateDto userCreateDto = new UserCreateDto()
-            {
-                Login = speakerCreateModel.Login,
-                Password = speakerCreateModel.Password,
-                UserDetails = new UserDetailsCreateDto()
-                {
-                    FirstName = speakerCreateModel.FirstName,
-                    LastName = speakerCreateModel.LastName,
-                    Patronymic = speakerCreateModel.Patronymic,
-                    Position = speakerCreateModel.Position,
-                    Email = speakerCreateModel.Email,
-                    AdditionalInfo = speakerCreateModel.AdditionalInfo,
-                }
-            };
-
-            UserDto userDto = await _userRepository.CreateSpeaker(userCreateDto);
-
-            UserViewModel userViewModel = new()
-            {
-                Id = userDto.Id,
-                Login = userDto.Login,
-                UserRoleId = userDto.UserRoleId,
-                UserDetails = new UserDetailsViewModel()
-                {
-                    Id = userDto.UserDetails.Id,
-                    FirstName = userDto.UserDetails.FirstName,
-                    LastName = userDto.UserDetails.LastName,
-                    Patronymic = userDto.UserDetails.Patronymic,
-                    Position = userDto.UserDetails.Position,
-                    Email = userDto.UserDetails.Email,
-                    AdditionalInfo = userDto.UserDetails.AdditionalInfo,
-                    IsDeleted = userDto.UserDetails.IsDeleted,
-                },
-                Created = userDto.Created,
-                Updated = userDto.Updated,
-            };
-
-            return Ok(userViewModel);
-        }
-
-        /// <summary>
-        /// Изменить пароль.
-        /// </summary>
-        /// <param name="userPasswordUpdateModel">Модель изменения пароля.</param>
         [HttpPut("ChangePassword")]
         [Authorize(Roles = UserStringRoles.ADMINISTRATORS_AND_SPEAKERS)]
         public async Task<ActionResult> ChangePassword(UserPasswordUpdateModel userPasswordUpdateModel)
@@ -158,20 +100,6 @@ namespace AskQuestion.WebApi.Controllers
             await _userRepository.ChangePassword(userPasswordUpdateDto);
 
             return Ok();
-        }
-
-        [HttpGet("GetSpeakers")]
-        public async Task<ActionResult<IEnumerable<SpeakerViewModel>>> GetSpeakers()
-        {
-            var speakers = await _userRepository.GetSpeakersAsync();
-
-            var result = speakers.Select(s => new SpeakerViewModel
-            {
-                Id = s.Id,
-                FullName = s.FullName,
-            });
-
-            return Ok(result);
         }
     }
 }

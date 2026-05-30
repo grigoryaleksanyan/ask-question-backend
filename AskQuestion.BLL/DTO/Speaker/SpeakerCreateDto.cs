@@ -1,6 +1,6 @@
-﻿namespace AskQuestion.BLL.DTO.User
+namespace AskQuestion.BLL.DTO.Speaker
 {
-    public class UserDetailsCreateDto
+    public class SpeakerCreateDto
     {
         public string FirstName { get; set; } = null!;
         public string LastName { get; set; } = null!;

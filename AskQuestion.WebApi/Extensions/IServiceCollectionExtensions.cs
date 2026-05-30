@@ -62,6 +62,7 @@ namespace AskQuestion.WebApi.Extensions
         public static void ConfigureRepositories(this IServiceCollection serviceCollection)
         {
             serviceCollection.AddScoped<IUserRepository, UserRepository>();
+            serviceCollection.AddScoped<ISpeakerRepository, SpeakerRepository>();
             serviceCollection.AddScoped<IQuestionRepository, QuestionRepository>();
             serviceCollection.AddScoped<IFaqCategoryRepository, FaqCategoryRepository>();
             serviceCollection.AddScoped<IFaqEntryRepository, FaqEntryRepository>();

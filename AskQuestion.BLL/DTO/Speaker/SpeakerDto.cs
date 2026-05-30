@@ -1,11 +1,14 @@
-﻿namespace AskQuestion.BLL.DTO.User
+namespace AskQuestion.BLL.DTO.Speaker
 {
-    public class UserDetailsCreateDto
+    public class SpeakerDto
     {
+        public Guid Id { get; set; }
         public string FirstName { get; set; } = null!;
         public string LastName { get; set; } = null!;
         public string? Patronymic { get; set; }
         public string? Position { get; set; }
         public string Email { get; set; } = null!;
+        public string? AdditionalInfo { get; set; }
+        public string Login { get; set; } = null!;
     }
 }
