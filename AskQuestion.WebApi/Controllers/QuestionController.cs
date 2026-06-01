@@ -24,14 +24,10 @@ namespace AskQuestion.WebApi.Controllers
     public class QuestionController : ControllerBase
     {
         private readonly IQuestionRepository _questionRepository;
-        private readonly IQuestionStatusTransitionRepository _statusTransitionRepository;
 
-        public QuestionController(
-            IQuestionRepository questionRepository,
-            IQuestionStatusTransitionRepository statusTransitionRepository)
+        public QuestionController(IQuestionRepository questionRepository)
         {
             _questionRepository = questionRepository ?? throw new ArgumentNullException(nameof(questionRepository));
-            _statusTransitionRepository = statusTransitionRepository ?? throw new ArgumentNullException(nameof(statusTransitionRepository));
         }
 
         private Guid GetVisitorId()
