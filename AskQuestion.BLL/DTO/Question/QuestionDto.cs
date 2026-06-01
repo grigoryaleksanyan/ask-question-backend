@@ -16,6 +16,7 @@ namespace AskQuestion.BLL.DTO.Question
         public int Dislikes { get; set; }
         public VoteType? UserVote { get; set; }
         public int Status { get; set; }
+        public string? Comment { get; set; }
         public DateTimeOffset Created { get; set; }
         public DateTimeOffset? Answered { get; set; }
     }

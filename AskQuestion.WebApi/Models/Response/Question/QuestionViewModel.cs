@@ -16,6 +16,7 @@ namespace AskQuestion.WebApi.Models.Response.Question
         public int Likes { get; set; }
         public int Dislikes { get; set; }
         public int Status { get; set; }
+        public string? Comment { get; set; }
         public DateTimeOffset Created { get; set; }
         public DateTimeOffset? Answered { get; set; }
 
