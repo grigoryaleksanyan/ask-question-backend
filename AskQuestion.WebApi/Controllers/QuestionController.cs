@@ -1,6 +1,7 @@
 ﻿using AskQuestion.BLL.DTO;
 using AskQuestion.BLL.DTO.Question;
 using AskQuestion.BLL.Repositories;
+using AskQuestion.BLL.Repositories.Interfaces;
 using AskQuestion.Core.Constants;
 using AskQuestion.Core.Enums;
 using AskQuestion.WebApi.Extensions;
@@ -9,6 +10,7 @@ using AskQuestion.WebApi.Models.Request.Question;
 using AskQuestion.WebApi.Models.Response.Question;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace AskQuestion.WebApi.Controllers
 {
@@ -22,10 +24,14 @@ namespace AskQuestion.WebApi.Controllers
     public class QuestionController : ControllerBase
     {
         private readonly IQuestionRepository _questionRepository;
+        private readonly IQuestionStatusTransitionRepository _statusTransitionRepository;
 
-        public QuestionController(IQuestionRepository questionRepository)
+        public QuestionController(
+            IQuestionRepository questionRepository,
+            IQuestionStatusTransitionRepository statusTransitionRepository)
         {
             _questionRepository = questionRepository ?? throw new ArgumentNullException(nameof(questionRepository));
+            _statusTransitionRepository = statusTransitionRepository ?? throw new ArgumentNullException(nameof(statusTransitionRepository));
         }
 
         private Guid GetVisitorId()
@@ -35,6 +41,17 @@ namespace AskQuestion.WebApi.Controllers
                 ?? throw new InvalidOperationException("VisitorId не найден");
 
             return Guid.Parse(visitorIdStr);
+        }
+
+        private Guid? GetCurrentUserId()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            return userIdClaim != null ? Guid.Parse(userIdClaim) : null;
+        }
+
+        private bool IsAdmin()
+        {
+            return User.IsInRole(UserStringRoles.ADMINISTRATORS_ONLY);
         }
 
         /// <summary>
@@ -83,6 +100,7 @@ namespace AskQuestion.WebApi.Controllers
                     Dislikes = question.Dislikes,
                     Views = question.Views,
                     Status = question.Status,
+                    Comment = question.Comment,
                     Created = question.Created,
                     Answered = question.Answered
                 }).ToList(),
@@ -116,6 +134,7 @@ namespace AskQuestion.WebApi.Controllers
                 Dislikes = question.Dislikes,
                 Views = question.Views,
                 Status = question.Status,
+                Comment = question.Comment,
                 Created = question.Created,
                 Answered = question.Answered
             });
@@ -159,6 +178,7 @@ namespace AskQuestion.WebApi.Controllers
                 Dislikes = question.Dislikes,
                 Views = question.Views + 1,
                 Status = question.Status,
+                Comment = question.Comment,
                 Created = question.Created,
                 Answered = question.Answered,
                 UserVote = userVote,
@@ -283,6 +303,107 @@ namespace AskQuestion.WebApi.Controllers
             }
 
             await _questionRepository.DeleteAsync(id);
+
+            return Ok();
+        }
+
+        /// <summary>
+        /// Изменить статус вопроса.
+        /// </summary>
+        /// <param name="id">Id вопроса.</param>
+        /// <param name="model">Модель смены статуса.</param>
+        /// <response code='200'>Статус изменён.</response>
+        /// <response code='400'>Недопустимый переход.</response>
+        /// <response code='403'>Нет прав.</response>
+        /// <response code='404'>Вопрос не найден.</response>
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [HttpPost("{id:guid}/status")]
+        [Authorize(Roles = $"{UserStringRoles.ADMINISTRATORS_ONLY},{UserStringRoles.SPEAKERS_ONLY}")]
+        public async Task<IActionResult> ChangeStatus(Guid id, QuestionStatusChangeModel model)
+        {
+            QuestionDto? question = await _questionRepository.GetByIdAsync(id);
+
+            if (question == null)
+            {
+                return NotFound();
+            }
+
+            if (!IsAdmin())
+            {
+                var speakerId = GetCurrentUserId();
+                if (question.SpeakerId != speakerId)
+                {
+                    return Forbid();
+                }
+            }
+
+            var dto = new QuestionStatusChangeDto
+            {
+                QuestionId = id,
+                NewStatus = model.Status,
+                ChangedByUserId = GetCurrentUserId(),
+            };
+
+            try
+            {
+                await _questionRepository.ChangeStatusAsync(dto);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+            return Ok();
+        }
+
+        /// <summary>
+        /// Установить комментарий к вопросу.
+        /// </summary>
+        /// <param name="id">Id вопроса.</param>
+        /// <param name="model">Модель комментария.</param>
+        /// <response code='200'>Комментарий установлен.</response>
+        /// <response code='403'>Нет прав.</response>
+        /// <response code='404'>Вопрос не найден.</response>
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [HttpPut("{id:guid}/comment")]
+        [Authorize(Roles = $"{UserStringRoles.ADMINISTRATORS_ONLY},{UserStringRoles.SPEAKERS_ONLY}")]
+        public async Task<IActionResult> SetComment(Guid id, QuestionCommentModel model)
+        {
+            QuestionDto? question = await _questionRepository.GetByIdAsync(id);
+
+            if (question == null)
+            {
+                return NotFound();
+            }
+
+            if (!IsAdmin())
+            {
+                var speakerId = GetCurrentUserId();
+                if (question.SpeakerId != speakerId)
+                {
+                    return Forbid();
+                }
+            }
+
+            var dto = new QuestionCommentDto
+            {
+                QuestionId = id,
+                Comment = model.Comment,
+            };
+
+            try
+            {
+                await _questionRepository.SetCommentAsync(dto);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
 
             return Ok();
         }
