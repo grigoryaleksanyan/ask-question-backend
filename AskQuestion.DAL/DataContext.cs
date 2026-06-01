@@ -50,6 +50,11 @@ namespace AskQuestion.DAL
         /// </summary>
         public DbSet<QuestionVote> QuestionVotes { get; set; } = null!;
 
+        /// <summary>
+        /// История смены статусов вопросов.
+        /// </summary>
+        public DbSet<QuestionStatusTransition> QuestionStatusTransitions { get; set; } = null!;
+
         public DataContext(DbContextOptions<DataContext> options) : base(options)
         {
             ArgumentNullException.ThrowIfNull(options);
@@ -114,6 +119,19 @@ namespace AskQuestion.DAL
                 entity.HasOne(q => q.AreaEntity)
                     .WithMany()
                     .HasForeignKey(q => q.AreaId)
+                    .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            modelBuilder.Entity<QuestionStatusTransition>(entity =>
+            {
+                entity.HasOne(qst => qst.Question)
+                    .WithMany()
+                    .HasForeignKey(qst => qst.QuestionId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(qst => qst.ChangedByUser)
+                    .WithMany()
+                    .HasForeignKey(qst => qst.ChangedByUserId)
                     .OnDelete(DeleteBehavior.SetNull);
             });
         }
