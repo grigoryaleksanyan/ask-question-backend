@@ -4,7 +4,6 @@ namespace AskQuestion.Core.Enums
     {
         New = 0,
         InFocus = 1,
-        WithComment = 2,
-        Answered = 3,
+        Answered = 2,
     }
 }
