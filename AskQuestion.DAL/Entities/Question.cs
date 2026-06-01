@@ -10,6 +10,7 @@
         public int Likes { get; set; }
         public int Dislikes { get; set; }
         public int Status { get; set; } = 0;
+        public string? Comment { get; set; }
         public DateTimeOffset? Answered { get; set; }
 
         #region Навигационные свойства
