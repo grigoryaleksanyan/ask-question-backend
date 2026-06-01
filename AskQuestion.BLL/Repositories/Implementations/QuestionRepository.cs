@@ -72,6 +72,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 Dislikes = q.Dislikes,
                 Views = q.Views,
                 Status = q.Status,
+                Comment = q.Comment,
                 Created = q.Created,
                 Answered = q.Answered,
             }).ToList();
@@ -110,6 +111,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 Dislikes = q.Dislikes,
                 Views = q.Views,
                 Status = q.Status,
+                Comment = q.Comment,
                 Created = q.Created,
                 Answered = q.Answered
             });
@@ -144,6 +146,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 Dislikes = question.Dislikes,
                 Views = question.Views,
                 Status = question.Status,
+                Comment = question.Comment,
                 Created = question.Created,
                 Answered = question.Answered
             };
@@ -273,6 +276,68 @@ namespace AskQuestion.BLL.Repositories.Implementations
         {
             QuestionVote? vote = await dataContext.QuestionVotes.FindAsync(questionId, visitorId);
             return vote?.VoteType;
+        }
+
+        public async Task ChangeStatusAsync(QuestionStatusChangeDto statusChangeDto)
+        {
+            Question? question = await dataContext.Questions
+                .FirstOrDefaultAsync(q => q.Id == statusChangeDto.QuestionId)
+                ?? throw new InvalidOperationException("Вопрос не найден");
+
+            int currentStatus = question.Status;
+            int newStatus = statusChangeDto.NewStatus;
+
+            if (currentStatus == newStatus)
+            {
+                throw new InvalidOperationException("Вопрос уже в этом статусе");
+            }
+
+            if (!IsValidTransition(currentStatus, newStatus))
+            {
+                throw new InvalidOperationException("Недопустимый переход статуса");
+            }
+
+            var transition = new QuestionStatusTransition
+            {
+                QuestionId = question.Id,
+                FromStatus = currentStatus,
+                ToStatus = newStatus,
+                ChangedByUserId = statusChangeDto.ChangedByUserId,
+                Created = DateTimeOffset.UtcNow,
+            };
+
+            await dataContext.QuestionStatusTransitions.AddAsync(transition);
+
+            question.Status = newStatus;
+            question.Updated = DateTimeOffset.UtcNow;
+
+            if (newStatus == (int)QuestionStatus.Answered)
+            {
+                question.Answered = DateTimeOffset.UtcNow;
+            }
+            else if (currentStatus == (int)QuestionStatus.Answered)
+            {
+                question.Answered = null;
+            }
+
+            await dataContext.SaveChangesAsync();
+        }
+
+        private static bool IsValidTransition(int from, int to)
+        {
+            return Math.Abs(from - to) == 1;
+        }
+
+        public async Task SetCommentAsync(QuestionCommentDto commentDto)
+        {
+            Question? question = await dataContext.Questions
+                .FirstOrDefaultAsync(q => q.Id == commentDto.QuestionId)
+                ?? throw new InvalidOperationException("Вопрос не найден");
+
+            question.Comment = commentDto.Comment;
+            question.Updated = DateTimeOffset.UtcNow;
+
+            await dataContext.SaveChangesAsync();
         }
     }
 }

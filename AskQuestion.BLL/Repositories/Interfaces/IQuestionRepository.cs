@@ -32,5 +32,9 @@ namespace AskQuestion.BLL.Repositories
         Task IncrementViewsAsync(Guid questionId);
 
         Task<VoteType?> GetUserVoteAsync(Guid questionId, Guid visitorId);
+
+        Task ChangeStatusAsync(QuestionStatusChangeDto statusChangeDto);
+
+        Task SetCommentAsync(QuestionCommentDto commentDto);
     }
 }
