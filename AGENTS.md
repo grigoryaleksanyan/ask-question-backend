@@ -32,7 +32,7 @@ PostgreSQL 16.1 через Npgsql EF Core provider. Контекст: `AskQuesti
 - Миграции: `AskQuestion.DAL/Migrations/`. Применяются **автоматически** при старте (`dbContext.Database.Migrate()` в `Program.cs`)
 - Seed: Admin-пользователь + UserDetails + две роли (Administrator, Speaker) — через `OnModelCreating`
 - Расширение PostgreSQL: `uuid-ossp`
-- Первичные ключи: `Guid` (через `uuid-ossp`), базовая сущность `BaseEntity` (`Id`, `Сreated`, `Updated`)
+- Первичные ключи: `Guid` (через `uuid-ossp`), базовая сущность `BaseEntity` (`Id`, `Created`, `Updated`)
 
 Создание миграции (из корня решения):
 ```
@@ -43,7 +43,7 @@ dotnet ef migrations add <Name> --project AskQuestion.DAL --startup-project AskQ
 
 | Сущность | Наследует | Ключ | Примечания |
 |---------|-----------|------|-----------|
-| `BaseEntity` | — | `Guid Id` | `[Column("Сreated")]` — кириллица в БД |
+| `BaseEntity` | — | `Guid Id` | `Created`, `Updated` — колонки теперь с латиницей (миграция `RenameCyrillicCreatedColumn`) |
 | `User` | BaseEntity | Guid | Login (unique index), Password (BCrypt), UserRoleId FK → UserRole |
 | `UserDetails` | BaseEntity | Guid | UserId FK → User, FirstName, LastName, Patronymic, Position, Email, AdditionalInfo, IsDeleted |
 | `UserRole` | — | `int UserRoleId` | Не наследует BaseEntity. Seed: 1=Administrator, 2=Speaker |
@@ -131,7 +131,7 @@ Toggle-голосование (анонимное, по VisitorId). Cookie `Visi
 
 ## Несоответствия и особенности
 
-- **Кириллица в колонке БД**: свойство `Created` (латиница) в `BaseEntity` маппится на колонку `Сreated` (кириллица) через `[Column("Сreated")]`. Колонка в БД остаётся с кириллическим именем; JSON-сериализация выдаёт `created` корректно
+- **Кириллица в колонке БД (исправлено)**: колонка `Сreated` (кириллица) переименована в `Created` (латиница) миграцией `RenameCyrillicCreatedColumn`
 - **Сессия**: используется `AddDistributedMemoryCache` + `AddSession` — только для хранения текста капчи
 - **Swagger**: доступен только в Development, XML-документация инжектируется (`GenerateDocumentationFile` + `NoWarn(1591)`)
 - **Dockerfile**: обновлён до .NET 10.0. Копирует `Roboto.ttf` в `/usr/share/fonts/` (для капчи через SkiaSharp)
