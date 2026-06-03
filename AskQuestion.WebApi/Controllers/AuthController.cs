@@ -26,6 +26,95 @@ namespace AskQuestion.WebApi.Controllers
         }
 
         /// <summary>
+        /// Проверить, требуется ли первичная настройка администратора.
+        /// </summary>
+        /// <response code='200'>Флаг необходимости настройки.</response>
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [HttpGet("SetupRequired")]
+        public async Task<ActionResult<SetupRequiredResponse>> SetupRequired()
+        {
+            bool setupRequired = !await _userRepository.IsAdminExistsAsync();
+
+            SetupRequiredResponse response = new() { SetupRequired = setupRequired };
+
+            return Ok(response);
+        }
+
+        /// <summary>
+        /// Создать администратора при первичной настройке.
+        /// </summary>
+        /// <param name="adminSetupModel">Модель создания администратора.</param>
+        /// <response code='200'>Данные созданного администратора.</response>
+        /// <response code='400'>Ошибка создания администратора.</response>
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [HttpPost("Setup")]
+        public async Task<ActionResult<UserViewModel>> Setup(AdminSetupModel adminSetupModel)
+        {
+            bool adminExists = await _userRepository.IsAdminExistsAsync();
+
+            if (adminExists)
+            {
+                return BadRequest("Администратор уже существует.");
+            }
+
+            AdminSetupDto adminSetupDto = new()
+            {
+                Email = adminSetupModel.Email,
+                Password = adminSetupModel.Password,
+                FirstName = adminSetupModel.FirstName,
+                LastName = adminSetupModel.LastName,
+                Patronymic = adminSetupModel.Patronymic,
+            };
+
+            UserDto userDto;
+
+            try
+            {
+                userDto = await _userRepository.SetupAdminAsync(adminSetupDto);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+            UserViewModel userViewModel = new()
+            {
+                Id = userDto.Id,
+                Email = userDto.Email,
+                UserRoleId = userDto.UserRoleId,
+                Created = userDto.Created,
+                Updated = userDto.Updated,
+            };
+
+            List<Claim> claims = new()
+            {
+                new Claim(ClaimTypes.Name, userDto.Email),
+                new Claim(ClaimTypes.NameIdentifier, userDto.Id.ToString()),
+                new Claim(ClaimTypes.Role, userDto.UserRoleId.ToString()),
+            };
+
+            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+
+            var authProperties = new AuthenticationProperties
+            {
+                AllowRefresh = true,
+                IsPersistent = true,
+                ExpiresUtc = DateTimeOffset.UtcNow.AddDays(1),
+            };
+
+            var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
+
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, claimsPrincipal, authProperties);
+
+            HttpContext.Response.Headers.Append("X-Content-Type-Options", "nosniff");
+            HttpContext.Response.Headers.Append("X-Xss-Protection", "1");
+            HttpContext.Response.Headers.Append("X-Frame-Options", "DENY");
+
+            return Ok(userViewModel);
+        }
+
+        /// <summary>
         /// Авторизоваться на портале.
         /// </summary>
         /// <param name="userAuthModel">Модель авторизации пользователя.</param>
