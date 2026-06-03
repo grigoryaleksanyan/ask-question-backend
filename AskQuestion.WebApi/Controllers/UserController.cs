@@ -50,7 +50,7 @@ namespace AskQuestion.WebApi.Controllers
             UserViewModel userViewModel = new UserViewModel()
             {
                 Id = userDto.Id,
-                Login = userDto.Login,
+                Email = userDto.Email,
                 UserRoleId = userDto.UserRoleId,
                 UserDetails = userDto.UserDetails is not null ? new UserDetailsViewModel()
                 {
@@ -59,7 +59,7 @@ namespace AskQuestion.WebApi.Controllers
                     LastName = userDto.UserDetails.LastName,
                     Patronymic = userDto.UserDetails.Patronymic,
                     Position = userDto.UserDetails.Position,
-                    Email = userDto.UserDetails.Email,
+
                     AdditionalInfo = userDto.UserDetails.AdditionalInfo,
                     IsDeleted = userDto.UserDetails.IsDeleted,
                 } : null,

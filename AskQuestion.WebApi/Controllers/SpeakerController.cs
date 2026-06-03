@@ -49,7 +49,7 @@ namespace AskQuestion.WebApi.Controllers
                 Position = dto.Position,
                 Email = dto.Email,
                 AdditionalInfo = dto.AdditionalInfo,
-                Login = dto.Login,
+
             });
 
             return Ok(result);
@@ -75,7 +75,7 @@ namespace AskQuestion.WebApi.Controllers
                 Position = speakerDto.Position,
                 Email = speakerDto.Email,
                 AdditionalInfo = speakerDto.AdditionalInfo,
-                Login = speakerDto.Login,
+
             };
 
             return Ok(result);
@@ -105,7 +105,7 @@ namespace AskQuestion.WebApi.Controllers
                 Position = speakerCreatedDto.Position,
                 Email = speakerCreatedDto.Email,
                 AdditionalInfo = speakerCreatedDto.AdditionalInfo,
-                Login = speakerCreatedDto.Login,
+
                 GeneratedPassword = speakerCreatedDto.GeneratedPassword,
             };
 

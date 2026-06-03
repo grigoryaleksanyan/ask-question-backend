@@ -73,13 +73,13 @@ namespace AskQuestion.DAL
                 }
             );
 
-            modelBuilder.Entity<User>().HasIndex(prop => prop.Login).IsUnique();
+            modelBuilder.Entity<User>().HasIndex(prop => prop.Email).IsUnique();
 
             modelBuilder.Entity<User>().HasData
             (
                 new List<User>
                 {
-                    new() { Id = Guid.Parse("00000000-0000-0000-0000-000000000001"), Login = "Admin", UserRoleId = 1, Password = "$2a$11$q385hN2923xQ0sWnC9I84eaC4jNqSx8m9HzZgZYUxBjh9vBX8cr1S", Created = DateTimeOffset.Parse("2023-01-01T00:00:00+00:00") },
+                    new() { Id = Guid.Parse("00000000-0000-0000-0000-000000000001"), Email = "admin@askquestion.local", UserRoleId = 1, Password = "$2a$11$q385hN2923xQ0sWnC9I84eaC4jNqSx8m9HzZgZYUxBjh9vBX8cr1S", Created = DateTimeOffset.Parse("2023-01-01T00:00:00+00:00") },
                 }
             );
 
@@ -93,7 +93,6 @@ namespace AskQuestion.DAL
                     LastName = "Admin",
                     Patronymic = null,
                     Position = null,
-                    Email = "admin@askquestion.local",
                     AdditionalInfo = null,
                     IsDeleted = false,
                     Created = DateTimeOffset.Parse("2023-01-01T00:00:00+00:00"),

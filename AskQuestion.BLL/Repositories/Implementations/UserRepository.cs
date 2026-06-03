@@ -13,7 +13,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
             User? user = await dataContext.Users
                 .AsNoTracking()
                 .Include(u => u.UserDetails)
-                .FirstOrDefaultAsync(user => user.Login == userAuthDto.Login);
+                .FirstOrDefaultAsync(user => user.Email == userAuthDto.Email);
 
             if (user == null)
             {
@@ -33,7 +33,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
             UserDto userDto = new()
             {
                 Id = user.Id,
-                Login = user.Login,
+                Email = user.Email,
                 UserRoleId = (Core.Enums.UserRoles)user.UserRoleId,
                 UserDetails = user.UserDetails is not null ? new UserDetailsDto
                 {
@@ -42,7 +42,6 @@ namespace AskQuestion.BLL.Repositories.Implementations
                     LastName = user.UserDetails.LastName,
                     Patronymic = user.UserDetails.Patronymic,
                     Position = user.UserDetails.Position,
-                    Email = user.UserDetails.Email,
                     AdditionalInfo = user.UserDetails.AdditionalInfo,
                     IsDeleted = user.UserDetails.IsDeleted,
                     Created = user.UserDetails.Created,
@@ -70,7 +69,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
             UserDto userDto = new()
             {
                 Id = user.Id,
-                Login = user.Login,
+                Email = user.Email,
                 UserRoleId = (Core.Enums.UserRoles)user.UserRoleId,
                 UserDetails = user.UserDetails is not null ? new UserDetailsDto
                 {
@@ -79,7 +78,6 @@ namespace AskQuestion.BLL.Repositories.Implementations
                     LastName = user.UserDetails.LastName,
                     Patronymic = user.UserDetails.Patronymic,
                     Position = user.UserDetails.Position,
-                    Email = user.UserDetails.Email,
                     AdditionalInfo = user.UserDetails.AdditionalInfo,
                     IsDeleted = user.UserDetails.IsDeleted,
                     Created = user.UserDetails.Created,

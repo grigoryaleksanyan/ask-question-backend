@@ -25,9 +25,8 @@ namespace AskQuestion.BLL.Repositories.Implementations
                     LastName = u.UserDetails.LastName,
                     Patronymic = u.UserDetails.Patronymic,
                     Position = u.UserDetails.Position,
-                    Email = u.UserDetails.Email,
+                    Email = u.Email,
                     AdditionalInfo = u.UserDetails.AdditionalInfo,
-                    Login = u.Login,
                 })
                 .ToListAsync();
 
@@ -52,9 +51,8 @@ namespace AskQuestion.BLL.Repositories.Implementations
                     LastName = u.UserDetails.LastName,
                     Patronymic = u.UserDetails.Patronymic,
                     Position = u.UserDetails.Position,
-                    Email = u.UserDetails.Email,
+                    Email = u.Email,
                     AdditionalInfo = u.UserDetails.AdditionalInfo,
-                    Login = u.Login,
                 })
                 .FirstOrDefaultAsync();
 
@@ -63,15 +61,14 @@ namespace AskQuestion.BLL.Repositories.Implementations
 
         public async Task<SpeakerCreatedDto> CreateAsync(SpeakerCreateDto speakerCreateDto)
         {
-            var isNotUniqueEmail = dataContext.UserDetails
-                .Any(ud => ud.Email.Equals(speakerCreateDto.Email));
+            var isNotUniqueEmail = dataContext.Users
+                .Any(u => u.Email.Equals(speakerCreateDto.Email));
 
             if (isNotUniqueEmail)
             {
                 throw new InvalidOperationException("Пользователь с таким Email уже существует");
             }
 
-            string login = await GenerateLoginAsync(speakerCreateDto.Email);
             string password = GeneratePassword();
 
             Guid userId = Guid.NewGuid();
@@ -79,7 +76,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
             User user = new()
             {
                 Id = userId,
-                Login = login,
+                Email = speakerCreateDto.Email,
                 Password = BCrypt.Net.BCrypt.HashPassword(password),
                 UserRoleId = (int)Core.Enums.UserRoles.Speaker,
                 Created = DateTimeOffset.UtcNow,
@@ -93,7 +90,6 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 LastName = speakerCreateDto.LastName,
                 Patronymic = speakerCreateDto.Patronymic,
                 Position = speakerCreateDto.Position,
-                Email = speakerCreateDto.Email,
                 IsDeleted = false,
                 Created = DateTimeOffset.UtcNow,
             };
@@ -109,8 +105,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 LastName = userDetails.LastName,
                 Patronymic = userDetails.Patronymic,
                 Position = userDetails.Position,
-                Email = userDetails.Email,
-                Login = user.Login,
+                Email = user.Email,
                 GeneratedPassword = password,
             };
 
@@ -131,19 +126,20 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 throw new InvalidOperationException("Спикер не найден");
             }
 
-            var isNotUniqueEmail = dataContext.UserDetails
-                .Any(ud => ud.Email.Equals(speakerUpdateDto.Email) && ud.UserId != speakerUpdateDto.Id);
+            var isNotUniqueEmail = dataContext.Users
+                .Any(u => u.Email.Equals(speakerUpdateDto.Email) && u.Id != speakerUpdateDto.Id);
 
             if (isNotUniqueEmail)
             {
                 throw new InvalidOperationException("Пользователь с таким Email уже существует");
             }
 
+            user.Email = speakerUpdateDto.Email;
+            user.Updated = DateTimeOffset.UtcNow;
             user.UserDetails.FirstName = speakerUpdateDto.FirstName;
             user.UserDetails.LastName = speakerUpdateDto.LastName;
             user.UserDetails.Patronymic = speakerUpdateDto.Patronymic;
             user.UserDetails.Position = speakerUpdateDto.Position;
-            user.UserDetails.Email = speakerUpdateDto.Email;
             user.UserDetails.AdditionalInfo = speakerUpdateDto.AdditionalInfo;
             user.UserDetails.Updated = DateTimeOffset.UtcNow;
 
@@ -168,21 +164,6 @@ namespace AskQuestion.BLL.Repositories.Implementations
             user.UserDetails.Updated = DateTimeOffset.UtcNow;
 
             await dataContext.SaveChangesAsync();
-        }
-
-        private async Task<string> GenerateLoginAsync(string email)
-        {
-            string baseLogin = email.Split('@')[0];
-            string login = baseLogin;
-            int suffix = 1;
-
-            while (await dataContext.Users.AnyAsync(u => u.Login == login))
-            {
-                login = $"{baseLogin}{suffix}";
-                suffix++;
-            }
-
-            return login;
         }
 
         private static string GeneratePassword()

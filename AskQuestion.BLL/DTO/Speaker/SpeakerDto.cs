@@ -9,6 +9,5 @@ namespace AskQuestion.BLL.DTO.Speaker
         public string? Position { get; set; }
         public string Email { get; set; } = null!;
         public string? AdditionalInfo { get; set; }
-        public string Login { get; set; } = null!;
     }
 }

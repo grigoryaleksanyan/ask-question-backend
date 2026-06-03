@@ -39,7 +39,7 @@ namespace AskQuestion.WebApi.Controllers
 
             UserAuthDto userAuthDto = new()
             {
-                Login = userAuthModel.Login,
+                Email = userAuthModel.Email,
                 Password = userAuthModel.Password,
             };
 
@@ -47,13 +47,13 @@ namespace AskQuestion.WebApi.Controllers
 
             if (userDto == default)
             {
-                return BadRequest("Неверный логин или пароль.");
+                return BadRequest("Неверный email или пароль.");
             }
 
             UserViewModel userViewModel = new()
             {
                 Id = userDto.Id,
-                Login = userDto.Login,
+                Email = userDto.Email,
                 UserRoleId = userDto.UserRoleId,
                 Created = userDto.Created,
                 Updated = userDto.Updated,
@@ -61,7 +61,7 @@ namespace AskQuestion.WebApi.Controllers
 
             List<Claim> claims = new()
             {
-                new Claim(ClaimTypes.Name, userDto.Login),
+                new Claim(ClaimTypes.Name, userDto.Email),
                 new Claim(ClaimTypes.NameIdentifier, userDto.Id.ToString()),
                 new Claim(ClaimTypes.Role, userDto.UserRoleId.ToString()),
             };

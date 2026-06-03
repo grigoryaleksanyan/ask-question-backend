@@ -7,7 +7,6 @@
         public string LastName { get; set; } = null!;
         public string? Patronymic { get; set; }
         public string? Position { get; set; }
-        public string Email { get; set; } = null!;
         public string? AdditionalInfo { get; set; }
         public bool IsDeleted { get; set; }
         public DateTimeOffset Created { get; set; }

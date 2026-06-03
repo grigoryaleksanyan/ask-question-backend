@@ -3,9 +3,9 @@
     public class User : BaseEntity
     {
         /// <summary>
-		/// Логин пользователя.
+		/// Email пользователя.
 		/// </summary>
-		public string Login { get; set; } = null!;
+		public string Email { get; set; } = null!;
 
         /// <summary>
 		/// Зашифрованный пароль пользователя.

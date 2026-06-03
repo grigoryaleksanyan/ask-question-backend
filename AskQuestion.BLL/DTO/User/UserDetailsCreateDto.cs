@@ -6,6 +6,5 @@
         public string LastName { get; set; } = null!;
         public string? Patronymic { get; set; }
         public string? Position { get; set; }
-        public string Email { get; set; } = null!;
     }
 }
