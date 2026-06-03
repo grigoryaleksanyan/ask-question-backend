@@ -44,8 +44,8 @@ dotnet ef migrations add <Name> --project AskQuestion.DAL --startup-project AskQ
 | Сущность | Наследует | Ключ | Примечания |
 |---------|-----------|------|-----------|
 | `BaseEntity` | — | `Guid Id` | `Created`, `Updated` — колонки теперь с латиницей (миграция `RenameCyrillicCreatedColumn`) |
-| `User` | BaseEntity | Guid | Login (unique index), Password (BCrypt), UserRoleId FK → UserRole |
-| `UserDetails` | BaseEntity | Guid | UserId FK → User, FirstName, LastName, Patronymic, Position, Email, AdditionalInfo, IsDeleted |
+| `User` | BaseEntity | Guid | Email (unique index), Password (BCrypt), UserRoleId FK → UserRole |
+| `UserDetails` | BaseEntity | Guid | UserId FK → User, FirstName, LastName, Patronymic, Position, AdditionalInfo, IsDeleted |
 | `UserRole` | — | `int UserRoleId` | Не наследует BaseEntity. Seed: 1=Administrator, 2=Speaker |
 | `Question` | BaseEntity | Guid | Text, Author, AreaId? FK→Area (SetNull), SpeakerId? FK→User (SetNull), Views, Likes, Dislikes, Status (int), Comment?, Answered? |
 | `QuestionStatusTransition` | BaseEntity | Guid | QuestionId FK→Question (Cascade), FromStatus (int), ToStatus (int), ChangedByUserId? FK→User (SetNull) |
@@ -65,7 +65,7 @@ dotnet ef migrations add <Name> --project AskQuestion.DAL --startup-project AskQ
 
 ## Авторизация
 
-Cookie-аутентификация (`CookieAuthenticationDefaults.AuthenticationScheme`). Cookie: `.WebApi`. Claims: `Name`, `NameIdentifier`, `Role` (по `UserRoleId`). Срок: 1 день. Роли: 1 = Administrator, 2 = Speaker. Константы ролей — `AskQuestion.Core.Constants.UserStringRoles`.
+Cookie-аутентификация (`CookieAuthenticationDefaults.AuthenticationScheme`). Cookie: `.WebApi`. Claims: `Name` (email), `NameIdentifier` (Guid), `Role` (по `UserRoleId`). Срок: 1 день. Роли: 1 = Administrator, 2 = Speaker. Константы ролей — `AskQuestion.Core.Constants.UserStringRoles`. Авторизация по Email (уникальный, required). Email хранится в `User.Email`, в `UserDetails` поля Email нет.
 
 ## Контроллеры
 
