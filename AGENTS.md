@@ -47,7 +47,8 @@ dotnet ef migrations add <Name> --project AskQuestion.DAL --startup-project AskQ
 | `User` | BaseEntity | Guid | Login (unique index), Password (BCrypt), UserRoleId FK → UserRole |
 | `UserDetails` | BaseEntity | Guid | UserId FK → User, FirstName, LastName, Patronymic, Position, Email, AdditionalInfo, IsDeleted |
 | `UserRole` | — | `int UserRoleId` | Не наследует BaseEntity. Seed: 1=Administrator, 2=Speaker |
-| `Question` | BaseEntity | Guid | Text, Author, AreaId? FK→Area (SetNull), SpeakerId? FK→User (SetNull), Views, Likes, Dislikes, Status (int), Answered? |
+| `Question` | BaseEntity | Guid | Text, Author, AreaId? FK→Area (SetNull), SpeakerId? FK→User (SetNull), Views, Likes, Dislikes, Status (int), Comment?, Answered? |
+| `QuestionStatusTransition` | BaseEntity | Guid | QuestionId FK→Question (Cascade), FromStatus (int), ToStatus (int), ChangedByUserId? FK→User (SetNull) |
 | `QuestionVote` | — | Composite `{QuestionId, VisitorId}` | VoteType enum. FK→Question (Cascade) |
 | `Area` | BaseEntity | Guid | Title, Order |
 | `FaqCategory` | BaseEntity | Guid | Name, Order, Nav: FaqEntries |
@@ -60,7 +61,7 @@ dotnet ef migrations add <Name> --project AskQuestion.DAL --startup-project AskQ
 |------|---------|
 | `UserRoles` | Administrator=1, Speaker=2 |
 | `VoteType` | Like=0, Dislike=1 |
-| `QuestionStatus` | New=0, InFocus=1, WithComment=2, Answered=3 |
+| `QuestionStatus` | New=0, InFocus=1, Answered=2 |
 
 ## Авторизация
 
@@ -73,13 +74,13 @@ Cookie-аутентификация (`CookieAuthenticationDefaults.Authenticatio
 | Контроллер | Маршрут | Авторизация |
 |-----------|---------|-------------|
 | `AuthController` | `api/Auth` | Login — анонимно, Logout — Admin+Speaker |
-| `QuestionController` | `api/Question` | GetCaptcha, GetAll, GetPopularQuestions, GetById, Like, Dislike, Create — анонимно; Update, Delete — Admin |
-| `FaqCategoryController` | `api/FaqCategory` | GetAllWithEntries — анонимно; GetAll, GetById, Create, Update, Delete, SetOrder — Admin |
+| `QuestionController` | `api/Question` | GetCaptcha, GetAll, GetPopularQuestions, GetById, Like, Dislike, Create — анонимно; ChangeStatus, SetComment — Admin+Speaker; Update, Delete — Admin |
+| `FaqCategoryController` | `api/FaqCategory` | GetAllWithEntries — анонимно; GetAllWithEntriesForAdmin — Admin; GetAll, GetById, Create, Update, Delete, SetOrder — Admin |
 | `FaqEntryController` | `api/FaqEntry` | Весь контроллер — Admin (authorizate на уровне класса) |
 | `FeedbackController` | `api/Feedback` | Create — анонимно; GetAll, Delete — Admin |
 | `AreaController` | `api/Area` | GetAll — анонимно; Create, Update, Delete, SetOrder — Admin |
 | `UserController` | `api/User` | GetUserData, ChangePassword — Admin+Speaker |
-| `SpeakerController` | `api/Speaker` | Весь контроллер — Admin (CRUD спикеров) |
+| `SpeakerController` | `api/Speaker` | GetAllPublic — анонимно; GetAll, GetById, Create, Update, Delete — Admin |
 | `DashboardController` | `api/Dashboard` | Summary — Admin |
 
 ## Ключевые функции
@@ -94,7 +95,7 @@ Toggle-голосование (анонимное, по VisitorId). Cookie `Visi
 
 ### Статусы вопросов
 
-`QuestionStatus` enum (New, InFocus, WithComment, Answered). Поле `Question.Status` (int). Поле `Question.Answered` (DateTimeOffset?) — дата ответа.
+`QuestionStatus` enum (New, InFocus, Answered). Поле `Question.Status` (int). Поле `Question.Comment` (string?) — комментарий при смене статуса. Поле `Question.Answered` (DateTimeOffset?) — дата ответа. Смена статуса логируется через `QuestionStatusTransition` (FromStatus, ToStatus, ChangedByUserId).
 
 ### Популярные вопросы
 
@@ -112,7 +113,7 @@ Toggle-голосование (анонимное, по VisitorId). Cookie `Visi
 
 Регистрация сервисов — в `AskQuestion.WebApi.Extensions.IServiceCollectionExtensions` (internal static). Репозитории регистрируются как Scoped (`AddScoped<I*Repository, *Repository>`).
 
-9 репозиториев: IUserRepository, ISpeakerRepository, IQuestionRepository, IFaqCategoryRepository, IFaqEntryRepository, IFeedbackRepository, IAreaRepository, IDashboardRepository.
+9 репозиториев: IUserRepository, ISpeakerRepository, IQuestionRepository, IQuestionStatusTransitionRepository, IFaqCategoryRepository, IFaqEntryRepository, IFeedbackRepository, IAreaRepository, IDashboardRepository.
 
 Также: `AddScoped<EnsureVisitorIdAttribute>()`.
 
