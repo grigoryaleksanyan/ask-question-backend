@@ -110,5 +110,83 @@ namespace AskQuestion.BLL.Repositories.Implementations
 
             await dataContext.SaveChangesAsync();
         }
+
+        public async Task<bool> IsAdminExistsAsync()
+        {
+            int adminRoleId = (int)Core.Enums.UserRoles.Administrator;
+
+            return await dataContext.Users
+                .AnyAsync(u => u.UserRoleId == adminRoleId);
+        }
+
+        public async Task<UserDto> SetupAdminAsync(AdminSetupDto dto)
+        {
+            int adminRoleId = (int)Core.Enums.UserRoles.Administrator;
+
+            bool adminExists = await dataContext.Users
+                .AnyAsync(u => u.UserRoleId == adminRoleId);
+
+            if (adminExists)
+            {
+                throw new InvalidOperationException("Администратор уже существует");
+            }
+
+            var isNotUniqueEmail = dataContext.Users
+                .Any(u => u.Email.Equals(dto.Email));
+
+            if (isNotUniqueEmail)
+            {
+                throw new InvalidOperationException("Пользователь с таким Email уже существует");
+            }
+
+            Guid userId = Guid.NewGuid();
+
+            User user = new()
+            {
+                Id = userId,
+                Email = dto.Email,
+                Password = BCrypt.Net.BCrypt.HashPassword(dto.Password),
+                UserRoleId = adminRoleId,
+                Created = DateTimeOffset.UtcNow,
+            };
+
+            UserDetails userDetails = new()
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                FirstName = dto.FirstName,
+                LastName = dto.LastName,
+                Patronymic = dto.Patronymic,
+                IsDeleted = false,
+                Created = DateTimeOffset.UtcNow,
+            };
+
+            await dataContext.Users.AddAsync(user);
+            await dataContext.UserDetails.AddAsync(userDetails);
+            await dataContext.SaveChangesAsync();
+
+            UserDto userDto = new()
+            {
+                Id = user.Id,
+                Email = user.Email,
+                UserRoleId = (Core.Enums.UserRoles)user.UserRoleId,
+                UserDetails = new UserDetailsDto
+                {
+                    Id = userDetails.Id,
+                    FirstName = userDetails.FirstName,
+                    LastName = userDetails.LastName,
+                    Patronymic = userDetails.Patronymic,
+                    Position = userDetails.Position,
+                    AdditionalInfo = userDetails.AdditionalInfo,
+                    IsDeleted = userDetails.IsDeleted,
+                    Created = userDetails.Created,
+                    Updated = userDetails.Updated,
+                },
+                Created = user.Created,
+                Updated = user.Updated,
+            };
+
+            return userDto;
+        }
     }
 }
