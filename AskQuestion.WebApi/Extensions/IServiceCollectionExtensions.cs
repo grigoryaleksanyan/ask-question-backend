@@ -1,4 +1,5 @@
-﻿using AskQuestion.BLL.Repositories;
+﻿using AskQuestion.BLL.Email;
+using AskQuestion.BLL.Repositories;
 using AskQuestion.BLL.Repositories.Implementations;
 using AskQuestion.BLL.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -70,6 +71,13 @@ namespace AskQuestion.WebApi.Extensions
             serviceCollection.AddScoped<IAreaRepository, AreaRepository>();
             serviceCollection.AddScoped<IDashboardRepository, DashboardRepository>();
             serviceCollection.AddScoped<IQuestionStatusTransitionRepository, QuestionStatusTransitionRepository>();
+        }
+
+        public static void ConfigureEmail(this IServiceCollection serviceCollection, IConfiguration configuration)
+        {
+            serviceCollection.Configure<SmtpSettings>(configuration.GetSection("Smtp"));
+            serviceCollection.AddSingleton<IEmailSender, EmailSender>();
+            serviceCollection.AddHostedService<EmailBackgroundService>();
         }
     }
 }
