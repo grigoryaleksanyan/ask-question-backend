@@ -131,8 +131,8 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 throw new InvalidOperationException("Администратор уже существует");
             }
 
-            var isNotUniqueEmail = dataContext.Users
-                .Any(u => u.Email.Equals(dto.Email));
+            var isNotUniqueEmail = await dataContext.Users
+                .AnyAsync(u => u.Email.Equals(dto.Email));
 
             if (isNotUniqueEmail)
             {
