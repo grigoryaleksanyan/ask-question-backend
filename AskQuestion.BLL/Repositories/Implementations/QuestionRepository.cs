@@ -1,14 +1,20 @@
 ﻿using AskQuestion.BLL.DTO;
 using AskQuestion.BLL.DTO.Question;
+using AskQuestion.BLL.Email;
 using AskQuestion.Core.Enums;
 using AskQuestion.DAL;
 using AskQuestion.DAL.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace AskQuestion.BLL.Repositories.Implementations
 {
-    public class QuestionRepository(DataContext dataContext) : IQuestionRepository
+    public class QuestionRepository(
+        DataContext dataContext,
+        IEmailSender emailSender,
+        IOptions<SmtpSettings> smtpSettings) : IQuestionRepository
     {
+        private readonly SmtpSettings _smtpSettings = smtpSettings.Value;
         public async Task<PaginatedResult<QuestionDto>> GetAllAsync(
             int page = 1,
             int pageSize = 10,
@@ -167,6 +173,25 @@ namespace AskQuestion.BLL.Repositories.Implementations
 
             await dataContext.AddAsync(question);
             await dataContext.SaveChangesAsync();
+
+            if (questionCreateDto.SpeakerId.HasValue)
+            {
+                var speaker = await dataContext.Users
+                    .AsNoTracking()
+                    .Include(u => u.UserDetails)
+                    .FirstOrDefaultAsync(u => u.Id == questionCreateDto.SpeakerId.Value);
+
+                if (speaker?.UserDetails != null)
+                {
+                    var emailMessage = EmailTemplateBuilder.BuildNewQuestionNotification(
+                        toEmail: speaker.Email,
+                        toName: speaker.UserDetails.GetFullName(),
+                        questionText: questionCreateDto.Text,
+                        questionUrl: $"{_smtpSettings.BaseUrl}/admin-questions/{question.Id}");
+
+                    await emailSender.EnqueueAsync(emailMessage);
+                }
+            }
 
             return question.Id;
         }
