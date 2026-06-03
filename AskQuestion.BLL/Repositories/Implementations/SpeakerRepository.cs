@@ -1,13 +1,19 @@
 using AskQuestion.BLL.DTO.Speaker;
+using AskQuestion.BLL.Email;
 using AskQuestion.BLL.Repositories.Interfaces;
 using AskQuestion.DAL;
 using AskQuestion.DAL.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace AskQuestion.BLL.Repositories.Implementations
 {
-    public class SpeakerRepository(DataContext dataContext) : ISpeakerRepository
+    public class SpeakerRepository(
+        DataContext dataContext,
+        IEmailSender emailSender,
+        IOptions<SmtpSettings> smtpSettings) : ISpeakerRepository
     {
+        private readonly SmtpSettings _smtpSettings = smtpSettings.Value;
         public async Task<IEnumerable<SpeakerDto>> GetAllAsync()
         {
             int speakerRoleId = (int)Core.Enums.UserRoles.Speaker;
@@ -97,6 +103,14 @@ namespace AskQuestion.BLL.Repositories.Implementations
             await dataContext.Users.AddAsync(user);
             await dataContext.UserDetails.AddAsync(userDetails);
             await dataContext.SaveChangesAsync();
+
+            var credentialsEmail = EmailTemplateBuilder.BuildSpeakerCredentials(
+                toEmail: user.Email,
+                toName: userDetails.GetFullName(),
+                password: password,
+                loginUrl: $"{_smtpSettings.BaseUrl}/login");
+
+            await emailSender.EnqueueAsync(credentialsEmail);
 
             SpeakerCreatedDto speakerCreatedDto = new()
             {
