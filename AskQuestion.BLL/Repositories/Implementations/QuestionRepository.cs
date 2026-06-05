@@ -167,7 +167,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
             Question question = new()
             {
                 Text = htmlSanitizer.Sanitize(questionCreateDto.Text),
-                Author = questionCreateDto.Author,
+                Author = htmlSanitizer.Sanitize(questionCreateDto.Author),
                 AreaId = questionCreateDto.AreaId,
                 SpeakerId = questionCreateDto.SpeakerId,
                 Created = DateTimeOffset.UtcNow,
@@ -188,7 +188,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
                     var emailMessage = EmailTemplateBuilder.BuildNewQuestionNotification(
                         toEmail: speaker.Email,
                         toName: speaker.UserDetails.GetFullName(),
-                        questionText: questionCreateDto.Text,
+                        questionText: question.Text,
                         questionUrl: $"{_smtpSettings.BaseUrl}/admin-questions/{question.Id}");
 
                     await emailSender.EnqueueAsync(emailMessage);
@@ -209,7 +209,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
             }
 
             question.Text = htmlSanitizer.Sanitize(questionUpdateDto.Text);
-            question.Author = questionUpdateDto.Author;
+            question.Author = htmlSanitizer.Sanitize(questionUpdateDto.Author);
             question.AreaId = questionUpdateDto.AreaId;
             question.SpeakerId = questionUpdateDto.SpeakerId;
 

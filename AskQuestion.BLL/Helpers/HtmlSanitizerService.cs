@@ -71,8 +71,13 @@ public class HtmlSanitizerService : IHtmlSanitizerService
         };
     }
 
-    public string Sanitize(string? html)
+    public string? Sanitize(string? html)
     {
+        if (html is null)
+        {
+            return null;
+        }
+
         if (string.IsNullOrWhiteSpace(html))
         {
             return string.Empty;

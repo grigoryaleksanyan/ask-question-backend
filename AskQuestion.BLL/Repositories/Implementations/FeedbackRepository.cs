@@ -34,9 +34,9 @@ namespace AskQuestion.BLL.Repositories.Implementations
         {
             Feedback feedback = new()
             {
-                Username = feedbackCreateDto.Username,
+                Username = htmlSanitizer.Sanitize(feedbackCreateDto.Username),
                 Email = feedbackCreateDto.Email,
-                Theme = feedbackCreateDto.Theme,
+                Theme = htmlSanitizer.Sanitize(feedbackCreateDto.Theme),
                 Text = htmlSanitizer.Sanitize(feedbackCreateDto.Text),
                 Created = DateTimeOffset.UtcNow,
             };
