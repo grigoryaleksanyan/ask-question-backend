@@ -1,6 +1,7 @@
 ﻿using AskQuestion.BLL.DTO;
 using AskQuestion.BLL.DTO.Question;
 using AskQuestion.BLL.Email;
+using AskQuestion.BLL.Helpers;
 using AskQuestion.Core.Enums;
 using AskQuestion.DAL;
 using AskQuestion.DAL.Entities;
@@ -12,7 +13,8 @@ namespace AskQuestion.BLL.Repositories.Implementations
     public class QuestionRepository(
         DataContext dataContext,
         IEmailSender emailSender,
-        IOptions<SmtpSettings> smtpSettings) : IQuestionRepository
+        IOptions<SmtpSettings> smtpSettings,
+        IHtmlSanitizerService htmlSanitizer) : IQuestionRepository
     {
         private readonly SmtpSettings _smtpSettings = smtpSettings.Value;
         public async Task<PaginatedResult<QuestionDto>> GetAllAsync(
@@ -164,7 +166,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
         {
             Question question = new()
             {
-                Text = questionCreateDto.Text,
+                Text = htmlSanitizer.Sanitize(questionCreateDto.Text),
                 Author = questionCreateDto.Author,
                 AreaId = questionCreateDto.AreaId,
                 SpeakerId = questionCreateDto.SpeakerId,
@@ -206,7 +208,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 throw new InvalidOperationException("Объект не найден");
             }
 
-            question.Text = questionUpdateDto.Text;
+            question.Text = htmlSanitizer.Sanitize(questionUpdateDto.Text);
             question.Author = questionUpdateDto.Author;
             question.AreaId = questionUpdateDto.AreaId;
             question.SpeakerId = questionUpdateDto.SpeakerId;
@@ -359,7 +361,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 .FirstOrDefaultAsync(q => q.Id == commentDto.QuestionId)
                 ?? throw new InvalidOperationException("Вопрос не найден");
 
-            question.Comment = commentDto.Comment;
+            question.Comment = htmlSanitizer.Sanitize(commentDto.Comment);
             question.Updated = DateTimeOffset.UtcNow;
 
             await dataContext.SaveChangesAsync();
