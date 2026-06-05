@@ -114,7 +114,7 @@ namespace AskQuestion.WebApi.Controllers
 
         [HttpPut("Update")]
         [Authorize(Roles = UserStringRoles.ADMINISTRATORS_ONLY)]
-        public async Task<IActionResult> Update(SpeakerUpdateModel speakerUpdateModel)
+        public async Task<ActionResult<SpeakerViewModel>> Update(SpeakerUpdateModel speakerUpdateModel)
         {
             SpeakerUpdateDto speakerUpdateDto = new()
             {
@@ -127,9 +127,20 @@ namespace AskQuestion.WebApi.Controllers
                 AdditionalInfo = speakerUpdateModel.AdditionalInfo,
             };
 
-            await _speakerRepository.UpdateAsync(speakerUpdateDto);
+            var speakerDto = await _speakerRepository.UpdateAsync(speakerUpdateDto);
 
-            return Ok();
+            SpeakerViewModel result = new()
+            {
+                Id = speakerDto.Id,
+                FirstName = speakerDto.FirstName,
+                LastName = speakerDto.LastName,
+                Patronymic = speakerDto.Patronymic,
+                Position = speakerDto.Position,
+                Email = speakerDto.Email,
+                AdditionalInfo = speakerDto.AdditionalInfo,
+            };
+
+            return Ok(result);
         }
 
         [HttpDelete("Delete/{id}")]

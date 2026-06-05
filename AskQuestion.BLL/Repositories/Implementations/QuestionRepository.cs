@@ -199,7 +199,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
             return question.Id;
         }
 
-        public async Task UpdateAsync(Guid id, QuestionUpdateDto questionUpdateDto)
+        public async Task<QuestionDto> UpdateAsync(Guid id, QuestionUpdateDto questionUpdateDto)
         {
             Question? question = await dataContext.Questions
                 .FirstOrDefaultAsync(q => q.Id == id);
@@ -215,6 +215,22 @@ namespace AskQuestion.BLL.Repositories.Implementations
             question.SpeakerId = questionUpdateDto.SpeakerId;
 
             await dataContext.SaveChangesAsync();
+
+            return new QuestionDto
+            {
+                Id = question.Id,
+                Text = question.Text,
+                Author = question.Author,
+                AreaId = question.AreaId,
+                SpeakerId = question.SpeakerId,
+                Views = question.Views,
+                Likes = question.Likes,
+                Dislikes = question.Dislikes,
+                Status = question.Status,
+                Comment = question.Comment,
+                Created = question.Created,
+                Answered = question.Answered,
+            };
         }
 
         public async Task DeleteAsync(Guid id)

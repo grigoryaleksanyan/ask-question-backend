@@ -128,7 +128,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
             return speakerCreatedDto;
         }
 
-        public async Task UpdateAsync(SpeakerUpdateDto speakerUpdateDto)
+        public async Task<SpeakerDto> UpdateAsync(SpeakerUpdateDto speakerUpdateDto)
         {
             int speakerRoleId = (int)Core.Enums.UserRoles.Speaker;
 
@@ -160,6 +160,17 @@ namespace AskQuestion.BLL.Repositories.Implementations
             user.UserDetails.Updated = DateTimeOffset.UtcNow;
 
             await dataContext.SaveChangesAsync();
+
+            return new SpeakerDto
+            {
+                Id = user.Id,
+                FirstName = user.UserDetails.FirstName,
+                LastName = user.UserDetails.LastName,
+                Patronymic = user.UserDetails.Patronymic,
+                Position = user.UserDetails.Position,
+                Email = user.Email,
+                AdditionalInfo = user.UserDetails.AdditionalInfo,
+            };
         }
 
         public async Task DeleteAsync(Guid id)

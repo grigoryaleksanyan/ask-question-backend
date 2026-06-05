@@ -21,7 +21,7 @@ namespace AskQuestion.BLL.Repositories
 
         Task<Guid> CreateAsync(QuestionCreateDto questionCreateDto);
 
-        Task UpdateAsync(Guid id, QuestionUpdateDto questionUpdateDto);
+        Task<QuestionDto> UpdateAsync(Guid id, QuestionUpdateDto questionUpdateDto);
 
         Task DeleteAsync(Guid id);
 

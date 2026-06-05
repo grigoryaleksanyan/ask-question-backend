@@ -76,7 +76,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
             };
         }
 
-        public async Task UpdateAsync(FaqEntryUpdateDto faqEntryUpdateDto)
+        public async Task<FaqEntryDto> UpdateAsync(FaqEntryUpdateDto faqEntryUpdateDto)
         {
             FaqEntry? faqEntry = await dataContext.FaqEntries
                 .FirstOrDefaultAsync(entry => entry.Id == faqEntryUpdateDto.Id);
@@ -91,6 +91,16 @@ namespace AskQuestion.BLL.Repositories.Implementations
             faqEntry.Updated = DateTimeOffset.UtcNow;
 
             await dataContext.SaveChangesAsync();
+
+            return new FaqEntryDto
+            {
+                Id = faqEntry.Id,
+                Question = faqEntry.Question,
+                Answer = faqEntry.Answer,
+                Order = faqEntry.Order,
+                Created = faqEntry.Created,
+                Updated = faqEntry.Updated,
+            };
         }
 
         public async Task DeleteAsync(Guid id)

@@ -50,7 +50,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
             };
         }
 
-        public async Task UpdateAsync(AreaUpdateDto areaUpdateDto)
+        public async Task<AreaDto> UpdateAsync(AreaUpdateDto areaUpdateDto)
         {
             Area? area = await dataContext.Areas
                 .FirstOrDefaultAsync(q => q.Id == areaUpdateDto.Id);
@@ -64,6 +64,15 @@ namespace AskQuestion.BLL.Repositories.Implementations
             area.Updated = DateTimeOffset.UtcNow;
 
             await dataContext.SaveChangesAsync();
+
+            return new AreaDto
+            {
+                Id = area.Id,
+                Title = area.Title,
+                Order = area.Order,
+                Created = area.Created,
+                Updated = area.Updated,
+            };
         }
 
         public async Task DeleteAsync(Guid id)

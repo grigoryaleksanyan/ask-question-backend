@@ -83,7 +83,7 @@ namespace AskQuestion.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpPut("Update")]
         [Authorize(Roles = UserStringRoles.ADMINISTRATORS_ONLY)]
-        public async Task<IActionResult> Update(AreaUpdateModel areaUpdateModel)
+        public async Task<ActionResult<AreaViewModel>> Update(AreaUpdateModel areaUpdateModel)
         {
             var areaUpdateDto = new AreaUpdateDto()
             {
@@ -91,9 +91,18 @@ namespace AskQuestion.WebApi.Controllers
                 Title = areaUpdateModel.Title
             };
 
-            await _areaRepository.UpdateAsync(areaUpdateDto);
+            var areaDto = await _areaRepository.UpdateAsync(areaUpdateDto);
 
-            return Ok();
+            var result = new AreaViewModel
+            {
+                Id = areaDto.Id,
+                Title = areaDto.Title,
+                Order = areaDto.Order,
+                Created = areaDto.Created,
+                Updated = areaDto.Updated,
+            };
+
+            return Ok(result);
         }
 
         /// <summary>

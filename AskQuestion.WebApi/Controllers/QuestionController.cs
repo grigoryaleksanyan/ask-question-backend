@@ -256,7 +256,7 @@ namespace AskQuestion.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpPut("Update/{id:guid}")]
         [Authorize(Roles = UserStringRoles.ADMINISTRATORS_ONLY)]
-        public async Task<IActionResult> Update(Guid id, QuestionUpdateModel questionUpdateModel)
+        public async Task<ActionResult<QuestionViewModel>> Update(Guid id, QuestionUpdateModel questionUpdateModel)
         {
             var question = await _questionRepository.GetByIdAsync(id);
 
@@ -274,9 +274,27 @@ namespace AskQuestion.WebApi.Controllers
                 SpeakerId = questionUpdateModel.SpeakerId,
             };
 
-            await _questionRepository.UpdateAsync(id, questionUpdateDto);
+            var questionDto = await _questionRepository.UpdateAsync(id, questionUpdateDto);
 
-            return Ok();
+            QuestionViewModel result = new()
+            {
+                Id = questionDto.Id,
+                Text = questionDto.Text,
+                Author = questionDto.Author,
+                AreaId = questionDto.AreaId,
+                AreaTitle = questionDto.AreaTitle,
+                SpeakerId = questionDto.SpeakerId,
+                SpeakerName = questionDto.SpeakerName,
+                Likes = questionDto.Likes,
+                Dislikes = questionDto.Dislikes,
+                Views = questionDto.Views,
+                Status = questionDto.Status,
+                Comment = questionDto.Comment,
+                Created = questionDto.Created,
+                Answered = questionDto.Answered,
+            };
+
+            return Ok(result);
         }
 
         /// <summary>

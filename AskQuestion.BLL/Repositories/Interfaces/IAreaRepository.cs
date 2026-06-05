@@ -8,7 +8,7 @@ namespace AskQuestion.BLL.Repositories.Interfaces
 
         Task<AreaDto> CreateAsync(AreaCreateDto areaCreateDto);
 
-        Task UpdateAsync(AreaUpdateDto areaUpdateDto);
+        Task<AreaDto> UpdateAsync(AreaUpdateDto areaUpdateDto);
 
         Task DeleteAsync(Guid id);
 

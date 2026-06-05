@@ -147,7 +147,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
             };
         }
 
-        public async Task UpdateAsync(FaqCategoryUpdateDto faqCategoryUpdateDto)
+        public async Task<FaqCategoryDto> UpdateAsync(FaqCategoryUpdateDto faqCategoryUpdateDto)
         {
             FaqCategory? faqCategory = await dataContext.FaqCategories
                 .FirstOrDefaultAsync(q => q.Id == faqCategoryUpdateDto.Id);
@@ -161,6 +161,16 @@ namespace AskQuestion.BLL.Repositories.Implementations
             faqCategory.Updated = DateTimeOffset.UtcNow;
 
             await dataContext.SaveChangesAsync();
+
+            return new FaqCategoryDto
+            {
+                Id = faqCategory.Id,
+                Name = faqCategory.Name,
+                Order = faqCategory.Order,
+                Created = faqCategory.Created,
+                Updated = faqCategory.Updated,
+                Entries = [],
+            };
         }
 
         public async Task DeleteAsync(Guid id)

@@ -183,7 +183,7 @@ namespace AskQuestion.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpPut("Update")]
         [Authorize(Roles = UserStringRoles.ADMINISTRATORS_ONLY)]
-        public async Task<IActionResult> Update(FaqCategoryUpdateModel faqCategoryUpdateModel)
+        public async Task<ActionResult<FaqCategoryViewModel>> Update(FaqCategoryUpdateModel faqCategoryUpdateModel)
         {
             var faqCategoryUpdateDto = new FaqCategoryUpdateDto()
             {
@@ -191,9 +191,18 @@ namespace AskQuestion.WebApi.Controllers
                 Name = faqCategoryUpdateModel.Name
             };
 
-            await _faqCategoryRepository.UpdateAsync(faqCategoryUpdateDto);
+            var faqCategoryDto = await _faqCategoryRepository.UpdateAsync(faqCategoryUpdateDto);
 
-            return Ok();
+            var result = new FaqCategoryViewModel
+            {
+                Id = faqCategoryDto.Id,
+                Name = faqCategoryDto.Name,
+                Order = faqCategoryDto.Order,
+                Created = faqCategoryDto.Created,
+                Updated = faqCategoryDto.Updated,
+            };
+
+            return Ok(result);
         }
 
         /// <summary>

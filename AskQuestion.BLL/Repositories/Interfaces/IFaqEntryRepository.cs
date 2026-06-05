@@ -10,7 +10,7 @@ namespace AskQuestion.BLL.Repositories.Interfaces
 
         Task<FaqEntryDto> CreateAsync(FaqEntryCreateDto faqEntryCreateDto);
 
-        Task UpdateAsync(FaqEntryUpdateDto faqEntryUpdateDto);
+        Task<FaqEntryDto> UpdateAsync(FaqEntryUpdateDto faqEntryUpdateDto);
 
         Task DeleteAsync(Guid id);
 

@@ -118,7 +118,7 @@ namespace AskQuestion.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpPut("Update")]
-        public async Task<IActionResult> Update(FaqEntryUpdateModel faqEntryUpdateModel)
+        public async Task<ActionResult<FaqEntryViewModel>> Update(FaqEntryUpdateModel faqEntryUpdateModel)
         {
             var faqEntryUpdateDto = new FaqEntryUpdateDto()
             {
@@ -127,9 +127,19 @@ namespace AskQuestion.WebApi.Controllers
                 Answer = faqEntryUpdateModel.Answer,
             };
 
-            await _faqEntryRepository.UpdateAsync(faqEntryUpdateDto);
+            var faqEntryDto = await _faqEntryRepository.UpdateAsync(faqEntryUpdateDto);
 
-            return Ok();
+            FaqEntryViewModel result = new()
+            {
+                Id = faqEntryDto.Id,
+                Question = faqEntryDto.Question,
+                Answer = faqEntryDto.Answer,
+                Order = faqEntryDto.Order,
+                Created = faqEntryDto.Created,
+                Updated = faqEntryDto.Updated,
+            };
+
+            return Ok(result);
         }
 
         /// <summary>
