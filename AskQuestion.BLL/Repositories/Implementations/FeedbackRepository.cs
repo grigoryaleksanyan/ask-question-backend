@@ -1,4 +1,5 @@
 ﻿using AskQuestion.BLL.DTO.Feedback;
+using AskQuestion.BLL.Helpers;
 using AskQuestion.BLL.Repositories.Interfaces;
 using AskQuestion.DAL;
 using AskQuestion.DAL.Entities;
@@ -6,7 +7,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AskQuestion.BLL.Repositories.Implementations
 {
-    public class FeedbackRepository(DataContext dataContext) : IFeedbackRepository
+    public class FeedbackRepository(
+        DataContext dataContext,
+        IHtmlSanitizerService htmlSanitizer) : IFeedbackRepository
     {
         public async Task<IEnumerable<FeedbackDto>> GetAllAsync()
         {
@@ -34,7 +37,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 Username = feedbackCreateDto.Username,
                 Email = feedbackCreateDto.Email,
                 Theme = feedbackCreateDto.Theme,
-                Text = feedbackCreateDto.Text,
+                Text = htmlSanitizer.Sanitize(feedbackCreateDto.Text),
                 Created = DateTimeOffset.UtcNow,
             };
 
