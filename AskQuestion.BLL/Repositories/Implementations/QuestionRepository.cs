@@ -101,6 +101,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 .Include(q => q.SpeakerUser)
                     .ThenInclude(u => u!.UserDetails)
                 .Include(q => q.AreaEntity)
+                .Where(q => q.Status == (int)QuestionStatus.New || q.Status == (int)QuestionStatus.InFocus)
                 .OrderByDescending(question => question.Likes)
                     .ThenByDescending(question => question.Created)
                 .Take(5)
