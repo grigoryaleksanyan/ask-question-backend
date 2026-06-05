@@ -1,4 +1,5 @@
-﻿using AskQuestion.BLL.DTO.User;
+﻿using AskQuestion.BLL.Helpers;
+using AskQuestion.BLL.DTO.User;
 using AskQuestion.BLL.Repositories.Interfaces;
 using AskQuestion.DAL;
 using AskQuestion.DAL.Entities;
@@ -6,7 +7,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AskQuestion.BLL.Repositories.Implementations
 {
-    public class UserRepository(DataContext dataContext) : IUserRepository
+    public class UserRepository(
+        DataContext dataContext,
+        IHtmlSanitizerService htmlSanitizer) : IUserRepository
     {
         public async Task<UserDto?> AuthorizeUser(UserAuthDto userAuthDto)
         {
@@ -154,9 +157,9 @@ namespace AskQuestion.BLL.Repositories.Implementations
             {
                 Id = Guid.NewGuid(),
                 UserId = userId,
-                FirstName = dto.FirstName,
-                LastName = dto.LastName,
-                Patronymic = dto.Patronymic,
+                FirstName = htmlSanitizer.Sanitize(dto.FirstName),
+                LastName = htmlSanitizer.Sanitize(dto.LastName),
+                Patronymic = htmlSanitizer.Sanitize(dto.Patronymic),
                 IsDeleted = false,
                 Created = DateTimeOffset.UtcNow,
             };
