@@ -75,7 +75,7 @@ public class HtmlSanitizerService : IHtmlSanitizerService
     {
         if (string.IsNullOrWhiteSpace(html))
         {
-            return html ?? string.Empty;
+            return string.Empty;
         }
 
         return _sanitizer.Sanitize(html);
