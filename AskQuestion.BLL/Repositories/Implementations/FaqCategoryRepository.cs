@@ -1,5 +1,6 @@
 ﻿using AskQuestion.BLL.DTO.FaqCategory;
 using AskQuestion.BLL.DTO.FaqEntry;
+using AskQuestion.BLL.Helpers;
 using AskQuestion.BLL.Repositories.Interfaces;
 using AskQuestion.DAL;
 using AskQuestion.DAL.Entities;
@@ -7,7 +8,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AskQuestion.BLL.Repositories.Implementations
 {
-    public class FaqCategoryRepository(DataContext dataContext) : IFaqCategoryRepository
+    public class FaqCategoryRepository(
+    DataContext dataContext,
+    IHtmlSanitizerService htmlSanitizer) : IFaqCategoryRepository
     {
         public async Task<IEnumerable<FaqCategoryDto>> GetAllAsync()
         {
@@ -125,7 +128,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
         {
             FaqCategory faqCategory = new()
             {
-                Name = faqCategoryCreateDto.Name,
+                Name = htmlSanitizer.Sanitize(faqCategoryCreateDto.Name),
                 Order = faqCategoryCreateDto.Order,
                 Created = DateTimeOffset.UtcNow,
             };
@@ -154,7 +157,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 throw new InvalidOperationException("Объект не найден");
             }
 
-            faqCategory.Name = faqCategoryUpdateDto.Name;
+            faqCategory.Name = htmlSanitizer.Sanitize(faqCategoryUpdateDto.Name);
             faqCategory.Updated = DateTimeOffset.UtcNow;
 
             await dataContext.SaveChangesAsync();
