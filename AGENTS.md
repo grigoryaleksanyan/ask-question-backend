@@ -69,14 +69,14 @@ Cookie-аутентификация (`CookieAuthenticationDefaults.Authenticatio
 
 ## Контроллеры
 
-Все маршруты начинаются с `api/`. Response caching отключён (атрибут `[ResponseCache(NoStore = true)]`) на QuestionController, FaqCategoryController, FaqEntryController, FeedbackController.
+Все маршруты начинаются с `api/`. Response caching отключён (атрибут `[ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]`) на QuestionController, FaqCategoryController, FaqEntryController, FeedbackController.
 
 | Контроллер | Маршрут | Авторизация |
 |-----------|---------|-------------|
 | `AuthController` | `api/Auth` | SetupRequired, Setup, Login — анонимно; Logout — Admin+Speaker |
 | `QuestionController` | `api/Question` | GetCaptcha, GetAll, GetPopularQuestions, GetById, Like, Dislike, Create — анонимно; ChangeStatus (`{id}/status`), SetComment (`{id}/comment`) — Admin+Speaker (Speaker только для своих вопросов); Update, Delete — Admin |
 | `FaqCategoryController` | `api/FaqCategory` | GetAllWithEntries — анонимно; GetAllWithEntriesForAdmin — Admin; GetAll, GetById, Create, Update, Delete, SetOrder — Admin |
-| `FaqEntryController` | `api/FaqEntry` | Весь контроллер — Admin (authorizate на уровне класса) |
+| `FaqEntryController` | `api/FaqEntry` | Весь контроллер — Authorize на уровне класса; GetAll, GetById, Create, Update, Delete, SetOrder — Admin |
 | `FeedbackController` | `api/Feedback` | Create — анонимно; GetAll, Delete — Admin |
 | `AreaController` | `api/Area` | GetAll — анонимно; Create, Update, Delete, SetOrder — Admin |
 | `UserController` | `api/User` | GetUserData, ChangePassword — Admin+Speaker |
@@ -120,7 +120,7 @@ Toggle-голосование (анонимное, по VisitorId). Cookie `Visi
 
 ### Пагинация вопросов
 
-`GetAll` принимает `page`, `pageSize`, `status`, `speakerId`, `areaId`, `search`, `sortOrder`. Возвращает `PaginatedResult<QuestionViewModel>` с `Items`, `TotalCount`, `Page`, `PageSize`.
+`GetAll` принимает `page`, `pageSize`, `status`, `speakerId`, `areaId`, `search`, `sortOrder`. Возвращает `PaginatedResult<QuestionViewModel>` с `Items`, `TotalCount`, `Page`, `PageSize`. `pageSize` ограничен диапазоном 1–50 (`Math.Clamp`), `page` минимум 1.
 
 ### Статусы вопросов
 
@@ -130,7 +130,7 @@ Toggle-голосование (анонимное, по VisitorId). Cookie `Visi
 
 ### Популярные вопросы
 
-`GET GetPopularQuestions` — анонимно, возвращает топ вопросов.
+`GET GetPopularQuestions` — анонимно, возвращает топ-5 вопросов.
 
 ### Счётчик просмотров
 
@@ -145,7 +145,7 @@ Toggle-голосование (анонимное, по VisitorId). Cookie `Visi
 | TotalQuestions | int | Общее кол-во вопросов |
 | AnsweredQuestions | int | Отвеченные |
 | UnansweredQuestions | int | Неотвеченные |
-| AverageResponseTimeHours | double? | Среднее время ответа |
+| AverageResponseTimeHours | double | Среднее время ответа (0 при отсутствии данных, округляется до 1 знака) |
 | TotalFeedback | int | Кол-во обращений обратной связи |
 | TotalAreas | int | Кол-во областей |
 | QuestionsWithoutSpeaker | int | Вопросы без спикера |
@@ -158,7 +158,15 @@ Toggle-голосование (анонимное, по VisitorId). Cookie `Visi
 
 ### Мягкое удаление спикеров
 
-`SpeakerRepository.DeleteAsync` не удаляет спикера физически — устанавливает `user.UserDetails.IsDeleted = true`.
+`SpeakerRepository.DeleteAsync` не удаляет спикера физически — устанавливает `user.UserDetails.IsDeleted = true`. Удалённые спикеры не могут авторизоваться (`UserRepository.AuthorizeUser` возвращает `null` для soft-deleted пользователей).
+
+### Капча
+
+`GenerateCaptcha` (`AskQuestion.WebApi/Helpers/GenerateCaptcha.cs`) — статический класс, генерирует капчу через SkiaSharp (Base64-изображение). Текст капчи хранится в сессии.
+
+### Security headers
+
+AuthController.Setup и Login добавляют заголовки `X-Content-Type-Options: nosniff`, `X-Xss-Protection: 1`, `X-Frame-Options: DENY`.
 
 ## DI
 
@@ -190,3 +198,6 @@ Toggle-голосование (анонимное, по VisitorId). Cookie `Visi
 - **Dockerfile**: обновлён до .NET 10.0. Копирует `Roboto.ttf` в `/usr/share/fonts/` (для капчи через SkiaSharp). `EXPOSE 80`
 - **BCrypt.Net-Next**: дублируется в WebApi и DAL
 - **RuntimeMigrations helper**: файл `Helpers/RuntimeMigrations.cs` существует, но не используется — Program.cs применяет миграции инлайн
+- **IQuestionRepository**: находится в `AskQuestion.BLL.Repositories.Interfaces` (согласовано с остальными интерфейсами)
+- **SpeakerCreatedDto**: при создании спикера ответ содержит `GeneratedPassword` (сгенерированный пароль)
+- **appsettings.Development.json**: существует, переопределяет уровень логирования
