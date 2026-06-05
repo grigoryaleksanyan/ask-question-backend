@@ -1,4 +1,5 @@
 ﻿using AskQuestion.BLL.DTO.Area;
+using AskQuestion.BLL.Helpers;
 using AskQuestion.BLL.Repositories.Interfaces;
 using AskQuestion.DAL;
 using AskQuestion.DAL.Entities;
@@ -6,7 +7,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AskQuestion.BLL.Repositories.Implementations
 {
-    public class AreaRepository(DataContext dataContext) : IAreaRepository
+    public class AreaRepository(
+        DataContext dataContext,
+        IHtmlSanitizerService htmlSanitizer) : IAreaRepository
     {
         public async Task<IEnumerable<AreaDto>> GetAllAsync()
         {
@@ -29,7 +32,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
         {
             Area area = new()
             {
-                Title = areaCreateDto.Title,
+                Title = htmlSanitizer.Sanitize(areaCreateDto.Title),
                 Order = areaCreateDto.Order,
                 Created = DateTimeOffset.UtcNow,
             };
@@ -57,7 +60,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 throw new InvalidOperationException("Объект не найден");
             }
 
-            area.Title = areaUpdateDto.Title;
+            area.Title = htmlSanitizer.Sanitize(areaUpdateDto.Title);
             area.Updated = DateTimeOffset.UtcNow;
 
             await dataContext.SaveChangesAsync();
