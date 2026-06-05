@@ -13,6 +13,7 @@ builder.Services.ConfigureSwagger();
 
 builder.Services.AddDbContext<DataContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSQL")));
 
+builder.Services.ConfigureHtmlSanitizer();
 builder.Services.ConfigureRepositories();
 builder.Services.ConfigureEmail(builder.Configuration);
 

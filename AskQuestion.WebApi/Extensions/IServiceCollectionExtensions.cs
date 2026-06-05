@@ -1,4 +1,5 @@
 ﻿using AskQuestion.BLL.Email;
+using AskQuestion.BLL.Helpers;
 using AskQuestion.BLL.Repositories;
 using AskQuestion.BLL.Repositories.Implementations;
 using AskQuestion.BLL.Repositories.Interfaces;
@@ -58,6 +59,11 @@ namespace AskQuestion.WebApi.Extensions
                 options.OperationFilter<SecurityRequirementsOperationFilter>();
                 options.OperationFilter<AppendAuthorizeToSummaryOperationFilter>();
             });
+        }
+
+        public static void ConfigureHtmlSanitizer(this IServiceCollection serviceCollection)
+        {
+            serviceCollection.AddSingleton<IHtmlSanitizerService, HtmlSanitizerService>();
         }
 
         public static void ConfigureRepositories(this IServiceCollection serviceCollection)
