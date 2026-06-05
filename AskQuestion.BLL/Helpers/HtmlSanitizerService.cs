@@ -1,4 +1,5 @@
 using Ganss.Xss;
+using System.Diagnostics.CodeAnalysis;
 
 namespace AskQuestion.BLL.Helpers;
 
@@ -71,6 +72,7 @@ public class HtmlSanitizerService : IHtmlSanitizerService
         };
     }
 
+    [return: NotNullIfNotNull("html")]
     public string? Sanitize(string? html)
     {
         if (html is null)
