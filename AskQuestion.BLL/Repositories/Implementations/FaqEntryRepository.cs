@@ -1,4 +1,5 @@
 ﻿using AskQuestion.BLL.DTO.FaqEntry;
+using AskQuestion.BLL.Helpers;
 using AskQuestion.BLL.Repositories.Interfaces;
 using AskQuestion.DAL;
 using AskQuestion.DAL.Entities;
@@ -6,7 +7,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AskQuestion.BLL.Repositories.Implementations
 {
-    public class FaqEntryRepository(DataContext dataContext) : IFaqEntryRepository
+    public class FaqEntryRepository(
+        DataContext dataContext,
+        IHtmlSanitizerService htmlSanitizer) : IFaqEntryRepository
     {
         public async Task<IEnumerable<FaqEntryDto>> GetAllAsync()
         {
@@ -53,8 +56,8 @@ namespace AskQuestion.BLL.Repositories.Implementations
             FaqEntry faqEntry = new()
             {
                 FaqCategoryId = faqEntryCreateDto.FaqCategoryId,
-                Question = faqEntryCreateDto.Question,
-                Answer = faqEntryCreateDto.Answer,
+                Question = htmlSanitizer.Sanitize(faqEntryCreateDto.Question),
+                Answer = htmlSanitizer.Sanitize(faqEntryCreateDto.Answer),
                 Order = faqEntryCreateDto.Order,
                 Created = DateTimeOffset.UtcNow,
             };
@@ -83,8 +86,8 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 throw new InvalidOperationException("Объект не найден");
             }
 
-            faqEntry.Question = faqEntryUpdateDto.Question;
-            faqEntry.Answer = faqEntryUpdateDto.Answer;
+            faqEntry.Question = htmlSanitizer.Sanitize(faqEntryUpdateDto.Question);
+            faqEntry.Answer = htmlSanitizer.Sanitize(faqEntryUpdateDto.Answer);
             faqEntry.Updated = DateTimeOffset.UtcNow;
 
             await dataContext.SaveChangesAsync();
