@@ -9,8 +9,8 @@ using Microsoft.EntityFrameworkCore;
 namespace AskQuestion.BLL.Repositories.Implementations
 {
     public class FaqCategoryRepository(
-    DataContext dataContext,
-    IHtmlSanitizerService htmlSanitizer) : IFaqCategoryRepository
+        DataContext dataContext,
+        IHtmlSanitizerService htmlSanitizer) : IFaqCategoryRepository
     {
         public async Task<IEnumerable<FaqCategoryDto>> GetAllAsync()
         {
