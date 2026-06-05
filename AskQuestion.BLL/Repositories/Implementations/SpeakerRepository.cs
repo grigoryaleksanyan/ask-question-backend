@@ -1,5 +1,6 @@
 using AskQuestion.BLL.DTO.Speaker;
 using AskQuestion.BLL.Email;
+using AskQuestion.BLL.Helpers;
 using AskQuestion.BLL.Repositories.Interfaces;
 using AskQuestion.DAL;
 using AskQuestion.DAL.Entities;
@@ -11,7 +12,8 @@ namespace AskQuestion.BLL.Repositories.Implementations
     public class SpeakerRepository(
         DataContext dataContext,
         IEmailSender emailSender,
-        IOptions<SmtpSettings> smtpSettings) : ISpeakerRepository
+        IOptions<SmtpSettings> smtpSettings,
+        IHtmlSanitizerService htmlSanitizer) : ISpeakerRepository
     {
         private readonly SmtpSettings _smtpSettings = smtpSettings.Value;
         public async Task<IEnumerable<SpeakerDto>> GetAllAsync()
@@ -92,10 +94,10 @@ namespace AskQuestion.BLL.Repositories.Implementations
             {
                 Id = Guid.NewGuid(),
                 UserId = userId,
-                FirstName = speakerCreateDto.FirstName,
-                LastName = speakerCreateDto.LastName,
-                Patronymic = speakerCreateDto.Patronymic,
-                Position = speakerCreateDto.Position,
+                FirstName = htmlSanitizer.Sanitize(speakerCreateDto.FirstName),
+                LastName = htmlSanitizer.Sanitize(speakerCreateDto.LastName),
+                Patronymic = htmlSanitizer.Sanitize(speakerCreateDto.Patronymic),
+                Position = htmlSanitizer.Sanitize(speakerCreateDto.Position),
                 IsDeleted = false,
                 Created = DateTimeOffset.UtcNow,
             };
@@ -150,11 +152,11 @@ namespace AskQuestion.BLL.Repositories.Implementations
 
             user.Email = speakerUpdateDto.Email;
             user.Updated = DateTimeOffset.UtcNow;
-            user.UserDetails.FirstName = speakerUpdateDto.FirstName;
-            user.UserDetails.LastName = speakerUpdateDto.LastName;
-            user.UserDetails.Patronymic = speakerUpdateDto.Patronymic;
-            user.UserDetails.Position = speakerUpdateDto.Position;
-            user.UserDetails.AdditionalInfo = speakerUpdateDto.AdditionalInfo;
+            user.UserDetails.FirstName = htmlSanitizer.Sanitize(speakerUpdateDto.FirstName);
+            user.UserDetails.LastName = htmlSanitizer.Sanitize(speakerUpdateDto.LastName);
+            user.UserDetails.Patronymic = htmlSanitizer.Sanitize(speakerUpdateDto.Patronymic);
+            user.UserDetails.Position = htmlSanitizer.Sanitize(speakerUpdateDto.Position);
+            user.UserDetails.AdditionalInfo = htmlSanitizer.Sanitize(speakerUpdateDto.AdditionalInfo);
             user.UserDetails.Updated = DateTimeOffset.UtcNow;
 
             await dataContext.SaveChangesAsync();
