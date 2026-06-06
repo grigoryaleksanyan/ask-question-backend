@@ -164,6 +164,10 @@ Toggle-голосование (анонимное, по VisitorId). Cookie `Visi
 
 `GenerateCaptcha` (`AskQuestion.WebApi/Helpers/GenerateCaptcha.cs`) — статический класс, генерирует капчу через SkiaSharp (Base64-изображение). Текст капчи хранится в сессии.
 
+### HtmlSanitizer
+
+`AskQuestion.BLL/Helpers/HtmlSanitizerService.cs` — реализация `IHtmlSanitizerService`, синглтон. Регистрируется через `ConfigureHtmlSanitizer()` в DI. Используется для санитизации HTML-контента.
+
 ### Security headers
 
 AuthController.Setup и Login добавляют заголовки `X-Content-Type-Options: nosniff`, `X-Xss-Protection: 1`, `X-Frame-Options: DENY`.
@@ -174,7 +178,7 @@ AuthController.Setup и Login добавляют заголовки `X-Content-T
 
 9 репозиториев: IUserRepository, ISpeakerRepository, IQuestionRepository, IQuestionStatusTransitionRepository, IFaqCategoryRepository, IFaqEntryRepository, IFeedbackRepository, IAreaRepository, IDashboardRepository.
 
-Также: `AddScoped<EnsureVisitorIdAttribute>()`, `ConfigureAuthentication()`, `ConfigureSession()`, `ConfigureSwagger()`, `ConfigureEmail()`.
+Также: `AddScoped<EnsureVisitorIdAttribute>()`, `ConfigureAuthentication()`, `ConfigureSession()`, `ConfigureSwagger()`, `ConfigureHtmlSanitizer()`, `ConfigureRepositories()`, `ConfigureEmail()`.
 
 ## Middleware-порядок (Program.cs)
 
