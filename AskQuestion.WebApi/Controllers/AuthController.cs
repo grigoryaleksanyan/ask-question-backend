@@ -1,6 +1,7 @@
 ﻿using AskQuestion.BLL.DTO.User;
 using AskQuestion.BLL.Repositories.Interfaces;
 using AskQuestion.Core.Constants;
+using AskQuestion.Core.Enums;
 using AskQuestion.WebApi.Models.Request.User;
 using AskQuestion.WebApi.Models.Response.User;
 using Microsoft.AspNetCore.Authentication;
@@ -91,7 +92,7 @@ namespace AskQuestion.WebApi.Controllers
             {
                 new Claim(ClaimTypes.Name, userDto.Email),
                 new Claim(ClaimTypes.NameIdentifier, userDto.Id.ToString()),
-                new Claim(ClaimTypes.Role, userDto.UserRoleId.ToString()),
+                new Claim(ClaimTypes.Role, ((UserRoles)userDto.UserRoleId).ToString()),
             };
 
             var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -152,7 +153,7 @@ namespace AskQuestion.WebApi.Controllers
             {
                 new Claim(ClaimTypes.Name, userDto.Email),
                 new Claim(ClaimTypes.NameIdentifier, userDto.Id.ToString()),
-                new Claim(ClaimTypes.Role, userDto.UserRoleId.ToString()),
+                new Claim(ClaimTypes.Role, ((UserRoles)userDto.UserRoleId).ToString()),
             };
 
 
