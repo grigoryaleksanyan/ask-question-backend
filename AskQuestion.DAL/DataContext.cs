@@ -55,6 +55,11 @@ namespace AskQuestion.DAL
         /// </summary>
         public DbSet<QuestionStatusTransition> QuestionStatusTransitions { get; set; } = null!;
 
+        /// <summary>
+        /// Токены сброса пароля.
+        /// </summary>
+        public DbSet<PasswordResetToken> PasswordResetTokens { get; set; } = null!;
+
         public DataContext(DbContextOptions<DataContext> options) : base(options)
         {
             ArgumentNullException.ThrowIfNull(options);
@@ -108,6 +113,15 @@ namespace AskQuestion.DAL
                     .WithMany()
                     .HasForeignKey(qst => qst.ChangedByUserId)
                     .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            modelBuilder.Entity<PasswordResetToken>(entity =>
+            {
+                entity.HasIndex(e => e.TokenHash).IsUnique();
+                entity.HasOne(e => e.User)
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
         }
     }
