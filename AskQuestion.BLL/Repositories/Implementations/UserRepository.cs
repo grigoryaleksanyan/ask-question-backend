@@ -1,15 +1,21 @@
 ﻿using AskQuestion.BLL.Helpers;
 using AskQuestion.BLL.DTO.User;
+using AskQuestion.BLL.Email;
 using AskQuestion.BLL.Repositories.Interfaces;
 using AskQuestion.DAL;
 using AskQuestion.DAL.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace AskQuestion.BLL.Repositories.Implementations
 {
     public class UserRepository(
         DataContext dataContext,
-        IHtmlSanitizerService htmlSanitizer) : IUserRepository
+        IHtmlSanitizerService htmlSanitizer,
+        IEmailSender emailSender,
+        IOptions<SmtpSettings> smtpSettings) : IUserRepository
     {
         public async Task<UserDto?> AuthorizeUser(UserAuthDto userAuthDto)
         {
@@ -190,6 +196,92 @@ namespace AskQuestion.BLL.Repositories.Implementations
             };
 
             return userDto;
+        }
+
+        public async Task ForgotPasswordAsync(ForgotPasswordDto dto)
+        {
+            User? user = await dataContext.Users
+                .Include(u => u.UserDetails)
+                .FirstOrDefaultAsync(u => u.Email == dto.Email);
+
+            if (user == null)
+            {
+                return;
+            }
+
+            if (user.UserDetails is not null && user.UserDetails.IsDeleted)
+            {
+                return;
+            }
+
+            List<PasswordResetToken> activeTokens = await dataContext.PasswordResetTokens
+                .Where(t => t.UserId == user.Id && !t.IsUsed && t.ExpiresAt > DateTimeOffset.UtcNow)
+                .ToListAsync();
+
+            foreach (PasswordResetToken token in activeTokens)
+            {
+                token.IsUsed = true;
+            }
+
+            byte[] tokenBytes = RandomNumberGenerator.GetBytes(32);
+            string rawToken = Convert.ToBase64String(tokenBytes)
+                .Replace('+', '-')
+                .Replace('/', '_')
+                .TrimEnd('=');
+
+            string tokenHash = Convert.ToHexString(
+                SHA256.HashData(Encoding.UTF8.GetBytes(rawToken))).ToLowerInvariant();
+
+            PasswordResetToken resetToken = new()
+            {
+                Id = Guid.NewGuid(),
+                UserId = user.Id,
+                TokenHash = tokenHash,
+                ExpiresAt = DateTimeOffset.UtcNow.AddHours(1),
+                IsUsed = false,
+                Created = DateTimeOffset.UtcNow,
+            };
+
+            await dataContext.PasswordResetTokens.AddAsync(resetToken);
+            await dataContext.SaveChangesAsync();
+
+            string toName = user.UserDetails?.GetFullName() ?? user.Email;
+            string resetUrl = $"{smtpSettings.Value.BaseUrl}/reset-password?token={rawToken}";
+
+            EmailMessage emailMessage = EmailTemplateBuilder.BuildPasswordResetEmail(
+                user.Email, toName, resetUrl);
+
+            await emailSender.EnqueueAsync(emailMessage);
+        }
+
+        public async Task ResetPasswordAsync(ResetPasswordDto dto)
+        {
+            string tokenHash = Convert.ToHexString(
+                SHA256.HashData(Encoding.UTF8.GetBytes(dto.Token))).ToLowerInvariant();
+
+            PasswordResetToken? resetToken = await dataContext.PasswordResetTokens
+                .FirstOrDefaultAsync(t => t.TokenHash == tokenHash);
+
+            if (resetToken == null || resetToken.IsUsed || resetToken.ExpiresAt < DateTimeOffset.UtcNow)
+            {
+                throw new InvalidOperationException("Ссылка для сброса пароля недействительна или истекла.");
+            }
+
+            User? user = await dataContext.Users
+                .FirstOrDefaultAsync(u => u.Id == resetToken.UserId);
+
+            if (user == null)
+            {
+                throw new InvalidOperationException("Ссылка для сброса пароля недействительна или истекла.");
+            }
+
+            user.Password = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+            user.Updated = DateTimeOffset.UtcNow;
+
+            resetToken.IsUsed = true;
+            resetToken.Updated = DateTimeOffset.UtcNow;
+
+            await dataContext.SaveChangesAsync();
         }
     }
 }
