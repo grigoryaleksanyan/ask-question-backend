@@ -84,6 +84,18 @@ namespace AskQuestion.WebApi.Controllers
                 Id = userDto.Id,
                 Email = userDto.Email,
                 UserRoleId = userDto.UserRoleId,
+                UserDetails = userDto.UserDetails is not null ? new UserDetailsViewModel()
+                {
+                    Id = userDto.UserDetails.Id,
+                    FirstName = userDto.UserDetails.FirstName,
+                    LastName = userDto.UserDetails.LastName,
+                    Patronymic = userDto.UserDetails.Patronymic,
+                    Position = userDto.UserDetails.Position,
+                    AdditionalInfo = userDto.UserDetails.AdditionalInfo,
+                    IsDeleted = userDto.UserDetails.IsDeleted,
+                    Created = userDto.UserDetails.Created,
+                    Updated = userDto.UserDetails.Updated,
+                } : null,
                 Created = userDto.Created,
                 Updated = userDto.Updated,
             };
@@ -145,6 +157,18 @@ namespace AskQuestion.WebApi.Controllers
                 Id = userDto.Id,
                 Email = userDto.Email,
                 UserRoleId = userDto.UserRoleId,
+                UserDetails = userDto.UserDetails is not null ? new UserDetailsViewModel()
+                {
+                    Id = userDto.UserDetails.Id,
+                    FirstName = userDto.UserDetails.FirstName,
+                    LastName = userDto.UserDetails.LastName,
+                    Patronymic = userDto.UserDetails.Patronymic,
+                    Position = userDto.UserDetails.Position,
+                    AdditionalInfo = userDto.UserDetails.AdditionalInfo,
+                    IsDeleted = userDto.UserDetails.IsDeleted,
+                    Created = userDto.UserDetails.Created,
+                    Updated = userDto.UserDetails.Updated,
+                } : null,
                 Created = userDto.Created,
                 Updated = userDto.Updated,
             };
@@ -155,7 +179,6 @@ namespace AskQuestion.WebApi.Controllers
                 new Claim(ClaimTypes.NameIdentifier, userDto.Id.ToString()),
                 new Claim(ClaimTypes.Role, ((UserRoles)userDto.UserRoleId).ToString()),
             };
-
 
             var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
 
