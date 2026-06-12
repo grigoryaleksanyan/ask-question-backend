@@ -99,5 +99,51 @@ namespace AskQuestion.BLL.Email
                 HtmlBody = html,
             };
         }
+
+        public static EmailMessage BuildPasswordResetEmail(
+            string toEmail,
+            string toName,
+            string resetUrl)
+        {
+            string html = $"""
+                <!DOCTYPE html>
+                <html>
+                <head><meta charset="utf-8"></head>
+                <body style="margin:0;padding:0;background:#f5f5f5;font-family:Arial,sans-serif;">
+                  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;padding:32px 0;">
+                    <tr><td align="center">
+                      <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;padding:32px;">
+                        <tr><td style="font-size:20px;font-weight:600;color:#1a1a1a;">
+                          Восстановление пароля
+                        </td></tr>
+                        <tr><td style="padding-top:16px;font-size:14px;color:#666;">
+                          Здравствуйте, {toName}!
+                        </td></tr>
+                        <tr><td style="padding-top:16px;font-size:14px;color:#333;">
+                          Для сброса пароля перейдите по ссылке ниже. Ссылка действительна 1 час.
+                        </td></tr>
+                        <tr><td style="padding-top:8px;font-size:13px;color:#999;">
+                          Если вы не запрашивали сброс пароля — проигнорируйте это письмо.
+                        </td></tr>
+                        <tr><td style="padding-top:24px;" align="center">
+                          <a href="{resetUrl}" style="display:inline-block;padding:12px 24px;background:#4F6AF6;color:#ffffff;text-decoration:none;border-radius:6px;font-size:14px;font-weight:500;">
+                            Сбросить пароль
+                          </a>
+                        </td></tr>
+                      </table>
+                    </td></tr>
+                  </table>
+                </body>
+                </html>
+                """;
+
+            return new EmailMessage
+            {
+                ToEmail = toEmail,
+                ToName = toName,
+                Subject = "Восстановление пароля на Ask Question",
+                HtmlBody = html,
+            };
+        }
     }
 }
