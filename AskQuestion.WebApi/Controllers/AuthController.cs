@@ -188,5 +188,53 @@ namespace AskQuestion.WebApi.Controllers
 
             return Ok();
         }
+
+        /// <summary>
+        /// Запросить ссылку для сброса пароля.
+        /// </summary>
+        /// <param name="forgotPasswordModel">Модель запроса сброса пароля.</param>
+        /// <response code='200'>Запрос обработан.</response>
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [HttpPost("ForgotPassword")]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordModel forgotPasswordModel)
+        {
+            ForgotPasswordDto forgotPasswordDto = new()
+            {
+                Email = forgotPasswordModel.Email,
+            };
+
+            await _userRepository.ForgotPasswordAsync(forgotPasswordDto);
+
+            return Ok();
+        }
+
+        /// <summary>
+        /// Сбросить пароль по токену из email.
+        /// </summary>
+        /// <param name="resetPasswordModel">Модель сброса пароля.</param>
+        /// <response code='200'>Пароль успешно изменён.</response>
+        /// <response code='400'>Недействительный или истёкший токен.</response>
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [HttpPost("ResetPassword")]
+        public async Task<IActionResult> ResetPassword(ResetPasswordModel resetPasswordModel)
+        {
+            ResetPasswordDto resetPasswordDto = new()
+            {
+                Token = resetPasswordModel.Token,
+                NewPassword = resetPasswordModel.NewPassword,
+            };
+
+            try
+            {
+                await _userRepository.ResetPasswordAsync(resetPasswordDto);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+            return Ok();
+        }
     }
 }
