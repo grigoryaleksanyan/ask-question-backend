@@ -12,7 +12,9 @@ namespace AskQuestion.BLL.Tests.Email
         {
             if (ExceptionToThrow != null)
             {
-                throw ExceptionToThrow;
+                var ex = ExceptionToThrow;
+                ExceptionToThrow = null;
+                throw ex;
             }
 
             SentMessages.Add(message);
