@@ -1,11 +1,10 @@
 using AskQuestion.BLL.Email;
 
-namespace AskQuestion.BLL.Tests.Email
-{
-    public class FakeEmailClientFactory : IEmailClientFactory
-    {
-        public FakeEmailClient Client { get; } = new();
+namespace AskQuestion.BLL.Tests.Email;
 
-        public IEmailClient CreateClient() => Client;
-    }
+public class FakeEmailClientFactory : IEmailClientFactory
+{
+    public FakeEmailClient Client { get; } = new();
+
+    public IEmailClient CreateClient() => Client;
 }
