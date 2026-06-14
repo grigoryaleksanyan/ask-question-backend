@@ -47,13 +47,13 @@ public static class TestDataSeeder
         return user;
     }
 
-    public static async Task<Area> SeedAreaAsync(DataContext context, string title = "Area")
+    public static async Task<Area> SeedAreaAsync(DataContext context, string title = "Area", int order = 0)
     {
         var area = new Area
         {
             Id = Guid.NewGuid(),
             Title = title,
-            Order = 0,
+            Order = order,
             Created = DateTimeOffset.UtcNow,
             Updated = DateTimeOffset.UtcNow,
         };
@@ -112,5 +112,66 @@ public static class TestDataSeeder
         await context.PasswordResetTokens.AddAsync(token);
         await context.SaveChangesAsync();
         return token;
+    }
+
+    public static async Task<FaqCategory> SeedFaqCategoryAsync(
+        DataContext context,
+        string name = "Category",
+        int order = 0)
+    {
+        var category = new FaqCategory
+        {
+            Id = Guid.NewGuid(),
+            Name = name,
+            Order = order,
+            Created = DateTimeOffset.UtcNow,
+            Updated = DateTimeOffset.UtcNow,
+        };
+        await context.FaqCategories.AddAsync(category);
+        await context.SaveChangesAsync();
+        return category;
+    }
+
+    public static async Task<FaqEntry> SeedFaqEntryAsync(
+        DataContext context,
+        Guid faqCategoryId,
+        string question = "Question",
+        string answer = "Answer",
+        int order = 0)
+    {
+        var entry = new FaqEntry
+        {
+            Id = Guid.NewGuid(),
+            FaqCategoryId = faqCategoryId,
+            Question = question,
+            Answer = answer,
+            Order = order,
+            Created = DateTimeOffset.UtcNow,
+            Updated = DateTimeOffset.UtcNow,
+        };
+        await context.FaqEntries.AddAsync(entry);
+        await context.SaveChangesAsync();
+        return entry;
+    }
+
+    public static async Task<Feedback> SeedFeedbackAsync(
+        DataContext context,
+        string username = "User",
+        string email = "test@test.com",
+        string theme = "Theme",
+        string text = "Text")
+    {
+        var feedback = new Feedback
+        {
+            Id = Guid.NewGuid(),
+            Username = username,
+            Email = email,
+            Theme = theme,
+            Text = text,
+            Created = DateTimeOffset.UtcNow,
+        };
+        await context.Feedback.AddAsync(feedback);
+        await context.SaveChangesAsync();
+        return feedback;
     }
 }
