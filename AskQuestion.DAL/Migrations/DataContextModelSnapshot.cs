@@ -329,6 +329,9 @@ namespace AskQuestion.DAL.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int>("Order")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Patronymic")
                         .HasColumnType("text");
 

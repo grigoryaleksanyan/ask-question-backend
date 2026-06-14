@@ -7,5 +7,6 @@ namespace AskQuestion.BLL.DTO.Speaker
         public string? Patronymic { get; set; }
         public string? Position { get; set; }
         public string Email { get; set; } = null!;
+        public int Order { get; set; }
     }
 }

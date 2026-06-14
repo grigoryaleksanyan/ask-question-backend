@@ -9,5 +9,6 @@ namespace AskQuestion.WebApi.Models.Response.Speaker
         public string? Position { get; set; }
         public string Email { get; set; } = null!;
         public string? AdditionalInfo { get; set; }
+        public int Order { get; set; }
     }
 }
