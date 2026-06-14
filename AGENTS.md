@@ -87,7 +87,7 @@ dotnet ef migrations add <Name> --project AskQuestion.DAL --startup-project AskQ
 |---------|-----------|------|-----------|
 | `BaseEntity` | — | `Guid Id` | `Created`, `Updated` — колонки с латиницей (миграция `RenameCyrillicCreatedColumn`) |
 | `User` | BaseEntity | Guid | Email (unique index), Password (BCrypt), UserRoleId FK → UserRole |
-| `UserDetails` | BaseEntity | Guid | UserId FK → User, FirstName, LastName, Patronymic, Position, AdditionalInfo, IsDeleted, Order. Метод `GetFullName()` (LastName + FirstName + Patronymic) |
+| `UserDetails` | BaseEntity | Guid | UserId FK → User, FirstName, LastName, Position, IsDeleted, Order. Метод `GetFullName()` (LastName + FirstName) |
 | `UserRole` | — | `int UserRoleId` | Не наследует BaseEntity. Seed: 1=Administrator, 2=Speaker |
 | `Question` | BaseEntity | Guid | Text, Author, AreaId? FK→Area (SetNull), SpeakerId? FK→User (SetNull), Views, Likes, Dislikes, Status (int), Comment?, Answered? |
 | `QuestionStatusTransition` | BaseEntity | Guid | QuestionId FK→Question (Cascade), FromStatus (int), ToStatus (int), ChangedByUserId? FK→User (SetNull) |
@@ -132,7 +132,7 @@ Cookie-аутентификация (`CookieAuthenticationDefaults.Authenticatio
 
 Администратор больше не сидируется в БД. При старте без админа — требуется первичная настройка:
 - `GET api/Auth/SetupRequired` — возвращает `{ SetupRequired: bool }` (true если админа нет)
-- `POST api/Auth/Setup` — создаёт первого администратора (только если админа нет). Принимает `AdminSetupModel` (Email, Password, ConfirmPassword, FirstName, LastName, Patronymic?). Автоматически логинит созданного пользователя
+- `POST api/Auth/Setup` — создаёт первого администратора (только если админа нет). Принимает `AdminSetupModel` (Email, Password, ConfirmPassword, FirstName, LastName). Автоматически логинит созданного пользователя
 
 Миграция `RemoveAdminSeedData` убрала хардкод-сид админа.
 
