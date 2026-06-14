@@ -83,6 +83,7 @@ namespace AskQuestion.WebApi.Extensions
         {
             serviceCollection.Configure<SmtpSettings>(configuration.GetSection("Smtp"));
             serviceCollection.AddSingleton<IEmailSender, EmailSender>();
+            serviceCollection.AddSingleton<IEmailClientFactory, SmtpEmailClientFactory>();
             serviceCollection.AddHostedService<EmailBackgroundService>();
         }
     }
