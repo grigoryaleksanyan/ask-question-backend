@@ -15,7 +15,6 @@ public static class TestDataSeeder
         UserRoles role,
         string firstName = "First",
         string lastName = "Last",
-        string? patronymic = null,
         bool isActive = true,
         int order = 0)
     {
@@ -36,7 +35,6 @@ public static class TestDataSeeder
             UserId = userId,
             FirstName = firstName,
             LastName = lastName,
-            Patronymic = patronymic,
             Order = order,
             Created = DateTimeOffset.UtcNow,
             Updated = DateTimeOffset.UtcNow,

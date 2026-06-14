@@ -346,11 +346,9 @@ public class UserRepositoryTests : RepositoryTestBase
             Password = "Password1",
             FirstName = "<script>bad</script>Admin",
             LastName = "<script>bad</script>Adminov",
-            Patronymic = "<script>bad</script>Patronymic",
         });
 
         result.UserDetails!.FirstName.Should().NotContain("<script>");
         result.UserDetails.LastName.Should().NotContain("<script>");
-        result.UserDetails.Patronymic.Should().NotContain("<script>");
     }
 }

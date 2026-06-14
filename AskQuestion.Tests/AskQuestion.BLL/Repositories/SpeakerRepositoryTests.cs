@@ -234,14 +234,12 @@ public class SpeakerRepositoryTests : RepositoryTestBase
             Email = "speaker@test.com",
             FirstName = "<script>bad</script>First",
             LastName = "<script>bad</script>Last",
-            Patronymic = "<script>bad</script>Patronymic",
             Position = "<script>bad</script>Position",
             Order = 1,
         });
 
         result.FirstName.Should().NotContain("<script>");
         result.LastName.Should().NotContain("<script>");
-        result.Patronymic.Should().NotContain("<script>");
         result.Position.Should().NotContain("<script>");
     }
 
@@ -257,15 +255,11 @@ public class SpeakerRepositoryTests : RepositoryTestBase
             Email = "updated@test.com",
             FirstName = "<script>bad</script>Updated",
             LastName = "<script>bad</script>Speaker",
-            Patronymic = "<script>bad</script>Patronymic",
             Position = "<script>bad</script>Position",
-            AdditionalInfo = "<script>bad</script>Info",
         });
 
         result.FirstName.Should().NotContain("<script>");
         result.LastName.Should().NotContain("<script>");
-        result.Patronymic.Should().NotContain("<script>");
         result.Position.Should().NotContain("<script>");
-        result.AdditionalInfo.Should().NotContain("<script>");
     }
 }
