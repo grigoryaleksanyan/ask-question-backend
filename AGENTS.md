@@ -4,15 +4,16 @@
 
 - `dotnet run` в `AskQuestion.WebApi/` — запуск на `http://localhost:5500` (Swagger на `/swagger`)
 - `dotnet build` в корне решения — сборка всех проектов
-- Тестов нет, тест-проектов нет
+- `dotnet test` в корне решения — запуск xUnit-тестов `AskQuestion.BLL.Tests`
 
 ## Архитектура
 
-.NET 10, решение `ask-question-backend.sln`. Четыре проекта с линейной зависимостью:
+.NET 10, решение `ask-question-backend.sln`. Пять проектов:
 
 ```
 WebApi → BLL → DAL → Core
 WebApi → DAL
+AskQuestion.BLL.Tests → BLL, DAL, Core
 ```
 
 | Проект | Назначение |
@@ -21,8 +22,24 @@ WebApi → DAL
 | `AskQuestion.DAL` | EF Core + Npgsql, сущности, `DataContext`, миграции |
 | `AskQuestion.BLL` | Репозитории (интерфейсы + реализации), DTO, Email-подсистема. Пакеты: `HtmlSanitizer` 9.0.892, `Microsoft.Extensions.Hosting.Abstractions` 10.0.8 |
 | `AskQuestion.WebApi` | Controllers, Request/Response модели, Program.cs, Extensions, ActionFilters |
+| `AskQuestion.BLL.Tests` | xUnit-тесты BLL-репозиториев. Пакеты: `xunit` 2.9.3, `FluentAssertions` 8.10.0, `Microsoft.EntityFrameworkCore.InMemory` 10.0.9, `coverlet.collector` 6.0.4 |
 
 Слой DAL → BLL — **нет**. BLL ссылается на DAL (и Core). WebApi ссылается на BLL и DAL напрямую (для `DataContext` в DI).
+
+## Тесты
+
+Проект `AskQuestion.Tests/AskQuestion.BLL/AskQuestion.BLL.Tests.csproj` (net10.0, xUnit). Тестирует репозитории BLL на изолированном in-memory `DataContext`:
+
+| Класс / файл | Что покрывает |
+|--------------|---------------|
+| `UserRepositoryTests` | авторизация, сброс пароля, изменение пароля, soft-delete |
+| `QuestionRepositoryTests` | создание, пагинация, голосование, смена статуса, просмотры, популярные вопросы |
+| `SpeakerRepositoryTests` | создание, обновление, удаление (soft-delete), порядок спикеров |
+| `RepositoryTestBase` | базовый класс: in-memory `DbContext`, `HtmlSanitizer`, `FakeEmailSender`, `IOptions<SmtpSettings>` |
+| `TestDataSeeder` | хелперы для seed пользователей, областей, вопросов и токенов сброса пароля |
+| `FakeEmailSender` | фейк `IEmailSender` для тестов, не отправляет реальные письма |
+
+Запуск: `dotnet test` из корня решения. Запуск конкретного класса: `dotnet test --filter "FullyQualifiedName~QuestionRepositoryTests"`.
 
 ## База данных
 
