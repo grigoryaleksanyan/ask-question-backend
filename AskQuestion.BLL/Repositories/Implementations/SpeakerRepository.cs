@@ -26,6 +26,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 .Where(u => u.UserRoleId == speakerRoleId
                     && u.UserDetails != null
                     && !u.UserDetails.IsDeleted)
+                .OrderBy(u => u.UserDetails.Order)
                 .Select(u => new SpeakerDto
                 {
                     Id = u.Id,
@@ -35,6 +36,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
                     Position = u.UserDetails.Position,
                     Email = u.Email,
                     AdditionalInfo = u.UserDetails.AdditionalInfo,
+                    Order = u.UserDetails.Order,
                 })
                 .ToListAsync();
 
@@ -61,6 +63,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
                     Position = u.UserDetails.Position,
                     Email = u.Email,
                     AdditionalInfo = u.UserDetails.AdditionalInfo,
+                    Order = u.UserDetails.Order,
                 })
                 .FirstOrDefaultAsync();
 
@@ -98,6 +101,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 LastName = htmlSanitizer.Sanitize(speakerCreateDto.LastName),
                 Patronymic = htmlSanitizer.Sanitize(speakerCreateDto.Patronymic),
                 Position = htmlSanitizer.Sanitize(speakerCreateDto.Position),
+                Order = speakerCreateDto.Order,
                 IsDeleted = false,
                 Created = DateTimeOffset.UtcNow,
             };
@@ -122,6 +126,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 Patronymic = userDetails.Patronymic,
                 Position = userDetails.Position,
                 Email = user.Email,
+                Order = userDetails.Order,
                 GeneratedPassword = password,
             };
 
@@ -170,6 +175,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 Position = user.UserDetails.Position,
                 Email = user.Email,
                 AdditionalInfo = user.UserDetails.AdditionalInfo,
+                Order = user.UserDetails.Order,
             };
         }
 
@@ -189,6 +195,25 @@ namespace AskQuestion.BLL.Repositories.Implementations
 
             user.UserDetails.IsDeleted = true;
             user.UserDetails.Updated = DateTimeOffset.UtcNow;
+
+            await dataContext.SaveChangesAsync();
+        }
+
+        public async Task SetOrderAsync(Guid[] ids)
+        {
+            var userDetails = await dataContext.UserDetails.ToListAsync();
+
+            for (int i = 0; i < ids.Length; i++)
+            {
+                var detail = userDetails.Find(d => d.UserId == ids[i]);
+
+                if (detail == null)
+                {
+                    continue;
+                }
+
+                detail.Order = i;
+            }
 
             await dataContext.SaveChangesAsync();
         }

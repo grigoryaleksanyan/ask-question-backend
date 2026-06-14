@@ -9,5 +9,6 @@ namespace AskQuestion.BLL.Repositories.Interfaces
         Task<SpeakerCreatedDto> CreateAsync(SpeakerCreateDto speakerCreateDto);
         Task<SpeakerDto> UpdateAsync(SpeakerUpdateDto speakerUpdateDto);
         Task DeleteAsync(Guid id);
+        Task SetOrderAsync(Guid[] ids);
     }
 }
