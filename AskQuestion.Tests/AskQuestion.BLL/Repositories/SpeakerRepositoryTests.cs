@@ -156,4 +156,87 @@ public class SpeakerRepositoryTests : RepositoryTestBase
         d1.Order.Should().Be(1);
         d2.Order.Should().Be(0);
     }
+
+    [Fact]
+    public async Task UpdateAsync_Throws_WhenSpeakerNotFound()
+    {
+        var repo = new SpeakerRepository(DataContext, EmailSender, SmtpSettings, HtmlSanitizer);
+
+        Func<Task> act = async () => await repo.UpdateAsync(new SpeakerUpdateDto
+        {
+            Id = Guid.NewGuid(),
+            Email = "new@test.com",
+            FirstName = "First",
+            LastName = "Last",
+        });
+
+        await act.Should().ThrowAsync<InvalidOperationException>();
+    }
+
+    [Fact]
+    public async Task GetByIdAsync_ReturnsNull_WhenUserIsNotSpeaker()
+    {
+        var admin = await TestDataSeeder.SeedUserAsync(DataContext, "admin@test.com", "p", UserRoles.Administrator);
+        var repo = new SpeakerRepository(DataContext, EmailSender, SmtpSettings, HtmlSanitizer);
+
+        var result = await repo.GetByIdAsync(admin.Id);
+
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task SetOrderAsync_IgnoresMissingIds()
+    {
+        var s1 = await TestDataSeeder.SeedUserAsync(DataContext, "s1@test.com", "p", UserRoles.Speaker, order: 0);
+        var repo = new SpeakerRepository(DataContext, EmailSender, SmtpSettings, HtmlSanitizer);
+
+        await repo.SetOrderAsync(new[] { Guid.NewGuid(), s1.Id });
+
+        var details = await DataContext.UserDetails.SingleAsync(ud => ud.UserId == s1.Id);
+        details.Order.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task CreateAsync_SanitizesInput()
+    {
+        var repo = new SpeakerRepository(DataContext, EmailSender, SmtpSettings, HtmlSanitizer);
+
+        var result = await repo.CreateAsync(new SpeakerCreateDto
+        {
+            Email = "speaker@test.com",
+            FirstName = "<script>bad</script>First",
+            LastName = "<script>bad</script>Last",
+            Patronymic = "<script>bad</script>Patronymic",
+            Position = "<script>bad</script>Position",
+            Order = 1,
+        });
+
+        result.FirstName.Should().NotContain("<script>");
+        result.LastName.Should().NotContain("<script>");
+        result.Patronymic.Should().NotContain("<script>");
+        result.Position.Should().NotContain("<script>");
+    }
+
+    [Fact]
+    public async Task UpdateAsync_SanitizesInput()
+    {
+        var speaker = await TestDataSeeder.SeedUserAsync(DataContext, "speaker@test.com", "p", UserRoles.Speaker);
+        var repo = new SpeakerRepository(DataContext, EmailSender, SmtpSettings, HtmlSanitizer);
+
+        var result = await repo.UpdateAsync(new SpeakerUpdateDto
+        {
+            Id = speaker.Id,
+            Email = "updated@test.com",
+            FirstName = "<script>bad</script>Updated",
+            LastName = "Speaker",
+            Patronymic = "<script>bad</script>Patronymic",
+            Position = "<script>bad</script>Position",
+            AdditionalInfo = "<script>bad</script>Info",
+        });
+
+        result.FirstName.Should().NotContain("<script>");
+        result.Patronymic.Should().NotContain("<script>");
+        result.Position.Should().NotContain("<script>");
+        result.AdditionalInfo.Should().NotContain("<script>");
+    }
 }
