@@ -144,4 +144,17 @@ public class FaqEntryRepositoryTests : RepositoryTestBase
         updated1!.Order.Should().Be(1);
         updated2!.Order.Should().Be(0);
     }
+
+    [Fact]
+    public async Task SetOrderAsync_IgnoresMissingIds()
+    {
+        var category = await TestDataSeeder.SeedFaqCategoryAsync(DataContext);
+        var e1 = await TestDataSeeder.SeedFaqEntryAsync(DataContext, category.Id, order: 0);
+        var repo = new FaqEntryRepository(DataContext, HtmlSanitizer);
+
+        await repo.SetOrderAsync(new[] { Guid.NewGuid(), e1.Id });
+
+        var updated = await DataContext.FaqEntries.FindAsync(e1.Id);
+        updated!.Order.Should().Be(1);
+    }
 }

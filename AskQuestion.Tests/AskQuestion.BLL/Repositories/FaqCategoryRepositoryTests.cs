@@ -158,4 +158,16 @@ public class FaqCategoryRepositoryTests : RepositoryTestBase
         updated1!.Order.Should().Be(1);
         updated2!.Order.Should().Be(0);
     }
+
+    [Fact]
+    public async Task SetOrderAsync_IgnoresMissingIds()
+    {
+        var c1 = await TestDataSeeder.SeedFaqCategoryAsync(DataContext, order: 0);
+        var repo = new FaqCategoryRepository(DataContext, HtmlSanitizer);
+
+        await repo.SetOrderAsync(new[] { Guid.NewGuid(), c1.Id });
+
+        var updated = await DataContext.FaqCategories.FindAsync(c1.Id);
+        updated!.Order.Should().Be(1);
+    }
 }
