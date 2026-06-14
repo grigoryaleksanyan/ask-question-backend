@@ -30,6 +30,7 @@ namespace AskQuestion.WebApi.Controllers
                 Id = dto.Id,
                 FirstName = dto.FirstName,
                 LastName = dto.LastName,
+                Position = dto.Position,
             });
 
             return Ok(result);
