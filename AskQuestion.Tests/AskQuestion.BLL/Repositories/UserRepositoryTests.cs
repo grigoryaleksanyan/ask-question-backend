@@ -235,4 +235,103 @@ public class UserRepositoryTests : RepositoryTestBase
 
         await act.Should().ThrowAsync<InvalidOperationException>();
     }
+
+    [Fact]
+    public async Task GetByIdAsync_ReturnsDto_WhenExists()
+    {
+        var user = await TestDataSeeder.SeedUserAsync(DataContext, "user@test.com", "Password1", UserRoles.Speaker);
+        var repo = new UserRepository(DataContext, HtmlSanitizer, EmailSender, SmtpSettings);
+
+        var result = await repo.GetById(user.Id);
+
+        result.Should().NotBeNull();
+        result!.Id.Should().Be(user.Id);
+        result.Email.Should().Be("user@test.com");
+    }
+
+    [Fact]
+    public async Task GetByIdAsync_ReturnsNull_WhenNotExists()
+    {
+        var repo = new UserRepository(DataContext, HtmlSanitizer, EmailSender, SmtpSettings);
+
+        var result = await repo.GetById(Guid.NewGuid());
+
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task IsAdminExistsAsync_ReturnsTrue_WhenAdminExists()
+    {
+        await TestDataSeeder.SeedUserAsync(DataContext, "admin@test.com", "Password1", UserRoles.Administrator);
+        var repo = new UserRepository(DataContext, HtmlSanitizer, EmailSender, SmtpSettings);
+
+        var result = await repo.IsAdminExistsAsync();
+
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task IsAdminExistsAsync_ReturnsFalse_WhenNoAdmin()
+    {
+        var repo = new UserRepository(DataContext, HtmlSanitizer, EmailSender, SmtpSettings);
+
+        var result = await repo.IsAdminExistsAsync();
+
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task AuthorizeUser_ReturnsNull_WhenUserNotFound()
+    {
+        var repo = new UserRepository(DataContext, HtmlSanitizer, EmailSender, SmtpSettings);
+
+        var result = await repo.AuthorizeUser(new UserAuthDto
+        {
+            Email = "missing@test.com",
+            Password = "Password1",
+        });
+
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ChangePassword_Throws_WhenUserNotFound()
+    {
+        var repo = new UserRepository(DataContext, HtmlSanitizer, EmailSender, SmtpSettings);
+
+        Func<Task> act = async () => await repo.ChangePassword(new UserPasswordUpdateDto
+        {
+            Id = Guid.NewGuid(),
+            Password = "Password1",
+            NewPassword = "NewPassword1",
+        });
+
+        await act.Should().ThrowAsync<InvalidOperationException>();
+    }
+
+    [Fact]
+    public async Task ForgotPasswordAsync_DoesNothing_WhenUserNotFound()
+    {
+        var repo = new UserRepository(DataContext, HtmlSanitizer, EmailSender, SmtpSettings);
+
+        await repo.ForgotPasswordAsync(new ForgotPasswordDto { Email = "missing@test.com" });
+
+        EmailSender.Messages.Should().BeEmpty();
+        DataContext.PasswordResetTokens.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ResetPasswordAsync_Throws_WhenUserNotFound()
+    {
+        await TestDataSeeder.SeedPasswordResetTokenAsync(DataContext, Guid.NewGuid(), "valid-token");
+        var repo = new UserRepository(DataContext, HtmlSanitizer, EmailSender, SmtpSettings);
+
+        Func<Task> act = async () => await repo.ResetPasswordAsync(new ResetPasswordDto
+        {
+            Token = "valid-token",
+            NewPassword = "NewPassword1",
+        });
+
+        await act.Should().ThrowAsync<InvalidOperationException>();
+    }
 }
