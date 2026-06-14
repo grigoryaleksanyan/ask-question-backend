@@ -8,6 +8,7 @@ namespace AskQuestion.BLL.DTO.User
         public string Email { get; set; } = null!;
         public string Password { get; set; } = null!;
         public UserRoles UserRoleId { get; set; }
+        public bool IsActive { get; set; }
         public UserDetailsDto? UserDetails { get; set; }
         public DateTimeOffset Created { get; set; }
         public DateTimeOffset? Updated { get; set; }

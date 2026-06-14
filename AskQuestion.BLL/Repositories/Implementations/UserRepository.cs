@@ -34,7 +34,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 return null;
             }
 
-            if (user.UserDetails is not null && user.UserDetails.IsDeleted)
+            if (!user.IsActive)
             {
                 return null;
             }
@@ -44,6 +44,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 Id = user.Id,
                 Email = user.Email,
                 UserRoleId = (Core.Enums.UserRoles)user.UserRoleId,
+                IsActive = user.IsActive,
                 UserDetails = user.UserDetails is not null ? new UserDetailsDto
                 {
                     Id = user.UserDetails.Id,
@@ -52,7 +53,6 @@ namespace AskQuestion.BLL.Repositories.Implementations
                     Patronymic = user.UserDetails.Patronymic,
                     Position = user.UserDetails.Position,
                     AdditionalInfo = user.UserDetails.AdditionalInfo,
-                    IsDeleted = user.UserDetails.IsDeleted,
                     Created = user.UserDetails.Created,
                     Updated = user.UserDetails.Updated,
                 } : null,
@@ -80,6 +80,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 Id = user.Id,
                 Email = user.Email,
                 UserRoleId = (Core.Enums.UserRoles)user.UserRoleId,
+                IsActive = user.IsActive,
                 UserDetails = user.UserDetails is not null ? new UserDetailsDto
                 {
                     Id = user.UserDetails.Id,
@@ -88,7 +89,6 @@ namespace AskQuestion.BLL.Repositories.Implementations
                     Patronymic = user.UserDetails.Patronymic,
                     Position = user.UserDetails.Position,
                     AdditionalInfo = user.UserDetails.AdditionalInfo,
-                    IsDeleted = user.UserDetails.IsDeleted,
                     Created = user.UserDetails.Created,
                     Updated = user.UserDetails.Updated,
                 } : null,
@@ -166,7 +166,6 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 FirstName = htmlSanitizer.Sanitize(dto.FirstName),
                 LastName = htmlSanitizer.Sanitize(dto.LastName),
                 Patronymic = htmlSanitizer.Sanitize(dto.Patronymic),
-                IsDeleted = false,
                 Created = DateTimeOffset.UtcNow,
             };
 
@@ -179,6 +178,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 Id = user.Id,
                 Email = user.Email,
                 UserRoleId = (Core.Enums.UserRoles)user.UserRoleId,
+                IsActive = user.IsActive,
                 UserDetails = new UserDetailsDto
                 {
                     Id = userDetails.Id,
@@ -187,7 +187,6 @@ namespace AskQuestion.BLL.Repositories.Implementations
                     Patronymic = userDetails.Patronymic,
                     Position = userDetails.Position,
                     AdditionalInfo = userDetails.AdditionalInfo,
-                    IsDeleted = userDetails.IsDeleted,
                     Created = userDetails.Created,
                     Updated = userDetails.Updated,
                 },
@@ -209,7 +208,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 return;
             }
 
-            if (user.UserDetails is not null && user.UserDetails.IsDeleted)
+            if (!user.IsActive)
             {
                 return;
             }
@@ -280,6 +279,36 @@ namespace AskQuestion.BLL.Repositories.Implementations
 
             resetToken.IsUsed = true;
             resetToken.Updated = DateTimeOffset.UtcNow;
+
+            await dataContext.SaveChangesAsync();
+        }
+
+        public async Task SetActiveAsync(Guid id, bool isActive, Core.Enums.UserRoles role)
+        {
+            User? user = await dataContext.Users.FindAsync(id);
+
+            if (user == null || user.UserRoleId != (int)role)
+            {
+                throw new KeyNotFoundException("Пользователь не найден");
+            }
+
+            if (!isActive)
+            {
+                int activeCount = await dataContext.Users
+                    .CountAsync(u => u.UserRoleId == (int)role && u.IsActive);
+
+                if (activeCount <= 1)
+                {
+                    string roleName = role == Core.Enums.UserRoles.Administrator
+                        ? "администратор"
+                        : "спикер";
+                    throw new InvalidOperationException(
+                        $"Нельзя деактивировать последнего активного {roleName}");
+                }
+            }
+
+            user.IsActive = isActive;
+            user.Updated = DateTimeOffset.UtcNow;
 
             await dataContext.SaveChangesAsync();
         }

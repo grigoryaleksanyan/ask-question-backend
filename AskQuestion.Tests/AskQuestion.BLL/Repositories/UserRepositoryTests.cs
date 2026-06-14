@@ -41,9 +41,9 @@ public class UserRepositoryTests : RepositoryTestBase
     }
 
     [Fact]
-    public async Task AuthorizeUser_ReturnsNull_WhenUserIsDeleted()
+    public async Task AuthorizeUser_ReturnsNull_WhenUserNotActive()
     {
-        await TestDataSeeder.SeedUserAsync(DataContext, "speaker@test.com", "Password1", UserRoles.Speaker, isDeleted: true);
+        await TestDataSeeder.SeedUserAsync(DataContext, "speaker@test.com", "Password1", UserRoles.Speaker, isActive: false);
         var repo = new UserRepository(DataContext, HtmlSanitizer, EmailSender, SmtpSettings);
 
         var result = await repo.AuthorizeUser(new UserAuthDto
@@ -159,9 +159,9 @@ public class UserRepositoryTests : RepositoryTestBase
     }
 
     [Fact]
-    public async Task ForgotPasswordAsync_DoesNothing_WhenUserDeleted()
+    public async Task ForgotPasswordAsync_DoesNothing_WhenUserNotActive()
     {
-        await TestDataSeeder.SeedUserAsync(DataContext, "user@test.com", "Password1", UserRoles.Speaker, isDeleted: true);
+        await TestDataSeeder.SeedUserAsync(DataContext, "user@test.com", "Password1", UserRoles.Speaker, isActive: false);
         var repo = new UserRepository(DataContext, HtmlSanitizer, EmailSender, SmtpSettings);
 
         await repo.ForgotPasswordAsync(new ForgotPasswordDto { Email = "user@test.com" });

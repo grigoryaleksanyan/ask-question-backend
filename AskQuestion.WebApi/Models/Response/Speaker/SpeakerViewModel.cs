@@ -10,5 +10,6 @@ namespace AskQuestion.WebApi.Models.Response.Speaker
         public string Email { get; set; } = null!;
         public string? AdditionalInfo { get; set; }
         public int Order { get; set; }
+        public bool IsActive { get; set; }
     }
 }

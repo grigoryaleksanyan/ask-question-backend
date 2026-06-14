@@ -16,7 +16,7 @@ public static class TestDataSeeder
         string firstName = "First",
         string lastName = "Last",
         string? patronymic = null,
-        bool isDeleted = false,
+        bool isActive = true,
         int order = 0)
     {
         var userId = Guid.NewGuid();
@@ -26,6 +26,7 @@ public static class TestDataSeeder
             Email = email,
             Password = BCrypt.Net.BCrypt.HashPassword(password, 4),
             UserRoleId = (int)role,
+            IsActive = isActive,
             Created = DateTimeOffset.UtcNow,
             Updated = DateTimeOffset.UtcNow,
         };
@@ -36,7 +37,6 @@ public static class TestDataSeeder
             FirstName = firstName,
             LastName = lastName,
             Patronymic = patronymic,
-            IsDeleted = isDeleted,
             Order = order,
             Created = DateTimeOffset.UtcNow,
             Updated = DateTimeOffset.UtcNow,

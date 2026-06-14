@@ -2,6 +2,7 @@ using AskQuestion.BLL.DTO.Speaker;
 using AskQuestion.BLL.Repositories.Interfaces;
 using AskQuestion.Core.Constants;
 using AskQuestion.WebApi.Models.Request.Speaker;
+using AskQuestion.WebApi.Models.Request.User;
 using AskQuestion.WebApi.Models.Response.Speaker;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -22,7 +23,7 @@ namespace AskQuestion.WebApi.Controllers
         [HttpGet("GetAllPublic")]
         public async Task<ActionResult<IEnumerable<SpeakerPublicViewModel>>> GetAllPublic()
         {
-            var speakerDtos = await _speakerRepository.GetAllAsync();
+            var speakerDtos = await _speakerRepository.GetAllPublicAsync();
 
             IEnumerable<SpeakerPublicViewModel> result = speakerDtos.Select(dto => new SpeakerPublicViewModel
             {
@@ -50,6 +51,7 @@ namespace AskQuestion.WebApi.Controllers
                 Email = dto.Email,
                 AdditionalInfo = dto.AdditionalInfo,
                 Order = dto.Order,
+                IsActive = dto.IsActive,
             });
 
             return Ok(result);
@@ -76,6 +78,7 @@ namespace AskQuestion.WebApi.Controllers
                 Email = speakerDto.Email,
                 AdditionalInfo = speakerDto.AdditionalInfo,
                 Order = speakerDto.Order,
+                IsActive = speakerDto.IsActive,
             };
 
             return Ok(result);
@@ -140,16 +143,24 @@ namespace AskQuestion.WebApi.Controllers
                 Email = speakerDto.Email,
                 AdditionalInfo = speakerDto.AdditionalInfo,
                 Order = speakerDto.Order,
+                IsActive = speakerDto.IsActive,
             };
 
             return Ok(result);
         }
 
-        [HttpDelete("Delete/{id}")]
+        [HttpPut("SetActive")]
         [Authorize(Roles = UserStringRoles.ADMINISTRATORS_ONLY)]
-        public async Task<IActionResult> Delete(Guid id)
+        public async Task<IActionResult> SetActive(UserSetActiveModel model)
         {
-            await _speakerRepository.DeleteAsync(id);
+            try
+            {
+                await _speakerRepository.SetActiveAsync(model.Id, model.IsActive);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
 
             return Ok();
         }

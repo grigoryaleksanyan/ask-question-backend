@@ -10,14 +10,30 @@ namespace AskQuestion.BLL.Tests.Repositories;
 public class SpeakerRepositoryTests : RepositoryTestBase
 {
     [Fact]
-    public async Task GetAllAsync_ReturnsOnlyActiveSpeakers_OrderedByOrder()
+    public async Task GetAllAsync_ReturnsAllSpeakers_OrderedByOrder()
     {
         var s1 = await TestDataSeeder.SeedUserAsync(DataContext, "s1@test.com", "p", UserRoles.Speaker, order: 2);
         var s2 = await TestDataSeeder.SeedUserAsync(DataContext, "s2@test.com", "p", UserRoles.Speaker, order: 1);
-        await TestDataSeeder.SeedUserAsync(DataContext, "del@test.com", "p", UserRoles.Speaker, isDeleted: true);
+        await TestDataSeeder.SeedUserAsync(DataContext, "del@test.com", "p", UserRoles.Speaker, isActive: false, order: 0);
         var repo = new SpeakerRepository(DataContext, EmailSender, SmtpSettings, HtmlSanitizer);
 
         var result = (await repo.GetAllAsync()).ToList();
+
+        result.Should().HaveCount(3);
+        result[0].Email.Should().Be("del@test.com");
+        result[1].Email.Should().Be("s2@test.com");
+        result[2].Email.Should().Be("s1@test.com");
+    }
+
+    [Fact]
+    public async Task GetAllPublicAsync_ReturnsOnlyActiveSpeakers_OrderedByOrder()
+    {
+        await TestDataSeeder.SeedUserAsync(DataContext, "s1@test.com", "p", UserRoles.Speaker, order: 2);
+        await TestDataSeeder.SeedUserAsync(DataContext, "s2@test.com", "p", UserRoles.Speaker, order: 1);
+        await TestDataSeeder.SeedUserAsync(DataContext, "del@test.com", "p", UserRoles.Speaker, isActive: false);
+        var repo = new SpeakerRepository(DataContext, EmailSender, SmtpSettings, HtmlSanitizer);
+
+        var result = (await repo.GetAllPublicAsync()).ToList();
 
         result.Should().HaveCount(2);
         result[0].Email.Should().Be("s2@test.com");
@@ -37,9 +53,9 @@ public class SpeakerRepositoryTests : RepositoryTestBase
     }
 
     [Fact]
-    public async Task GetByIdAsync_ReturnsNull_WhenDeleted()
+    public async Task GetByIdAsync_ReturnsNull_WhenNotActive()
     {
-        var speaker = await TestDataSeeder.SeedUserAsync(DataContext, "speaker@test.com", "p", UserRoles.Speaker, isDeleted: true);
+        var speaker = await TestDataSeeder.SeedUserAsync(DataContext, "speaker@test.com", "p", UserRoles.Speaker, isActive: false);
         var repo = new SpeakerRepository(DataContext, EmailSender, SmtpSettings, HtmlSanitizer);
 
         var result = await repo.GetByIdAsync(speaker.Id);
@@ -121,25 +137,37 @@ public class SpeakerRepositoryTests : RepositoryTestBase
     }
 
     [Fact]
-    public async Task DeleteAsync_SetsIsDeleted()
+    public async Task SetActiveAsync_DeactivatesSpeaker()
     {
-        var speaker = await TestDataSeeder.SeedUserAsync(DataContext, "speaker@test.com", "p", UserRoles.Speaker);
+        await TestDataSeeder.SeedUserAsync(DataContext, "s1@test.com", "p", UserRoles.Speaker);
+        var speaker = await TestDataSeeder.SeedUserAsync(DataContext, "s2@test.com", "p", UserRoles.Speaker);
         var repo = new SpeakerRepository(DataContext, EmailSender, SmtpSettings, HtmlSanitizer);
 
-        await repo.DeleteAsync(speaker.Id);
+        await repo.SetActiveAsync(speaker.Id, false);
 
-        var details = await DataContext.UserDetails.SingleAsync(ud => ud.UserId == speaker.Id);
-        details.IsDeleted.Should().BeTrue();
+        var user = await DataContext.Users.SingleAsync(u => u.Id == speaker.Id);
+        user.IsActive.Should().BeFalse();
     }
 
     [Fact]
-    public async Task DeleteAsync_Throws_WhenSpeakerNotFound()
+    public async Task SetActiveAsync_Throws_WhenSpeakerNotFound()
     {
         var repo = new SpeakerRepository(DataContext, EmailSender, SmtpSettings, HtmlSanitizer);
 
-        Func<Task> act = async () => await repo.DeleteAsync(Guid.NewGuid());
+        Func<Task> act = async () => await repo.SetActiveAsync(Guid.NewGuid(), false);
 
         await act.Should().ThrowAsync<InvalidOperationException>();
+    }
+
+    [Fact]
+    public async Task SetActiveAsync_Throws_WhenDeactivatingLastActiveSpeaker()
+    {
+        var speaker = await TestDataSeeder.SeedUserAsync(DataContext, "solo@test.com", "p", UserRoles.Speaker);
+        var repo = new SpeakerRepository(DataContext, EmailSender, SmtpSettings, HtmlSanitizer);
+
+        Func<Task> act = async () => await repo.SetActiveAsync(speaker.Id, false);
+
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("Нельзя деактивировать последнего активного спикера");
     }
 
     [Fact]

@@ -24,8 +24,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 .AsNoTracking()
                 .Include(u => u.UserDetails)
                 .Where(u => u.UserRoleId == speakerRoleId
-                    && u.UserDetails != null
-                    && !u.UserDetails.IsDeleted)
+                    && u.UserDetails != null)
                 .OrderBy(u => u.UserDetails.Order)
                 .Select(u => new SpeakerDto
                 {
@@ -37,6 +36,35 @@ namespace AskQuestion.BLL.Repositories.Implementations
                     Email = u.Email,
                     AdditionalInfo = u.UserDetails.AdditionalInfo,
                     Order = u.UserDetails.Order,
+                    IsActive = u.IsActive,
+                })
+                .ToListAsync();
+
+            return speakers;
+        }
+
+        public async Task<IEnumerable<SpeakerDto>> GetAllPublicAsync()
+        {
+            int speakerRoleId = (int)Core.Enums.UserRoles.Speaker;
+
+            IEnumerable<SpeakerDto> speakers = await dataContext.Users
+                .AsNoTracking()
+                .Include(u => u.UserDetails)
+                .Where(u => u.UserRoleId == speakerRoleId
+                    && u.UserDetails != null
+                    && u.IsActive)
+                .OrderBy(u => u.UserDetails.Order)
+                .Select(u => new SpeakerDto
+                {
+                    Id = u.Id,
+                    FirstName = u.UserDetails.FirstName,
+                    LastName = u.UserDetails.LastName,
+                    Patronymic = u.UserDetails.Patronymic,
+                    Position = u.UserDetails.Position,
+                    Email = u.Email,
+                    AdditionalInfo = u.UserDetails.AdditionalInfo,
+                    Order = u.UserDetails.Order,
+                    IsActive = u.IsActive,
                 })
                 .ToListAsync();
 
@@ -53,7 +81,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 .Where(u => u.Id == id
                     && u.UserRoleId == speakerRoleId
                     && u.UserDetails != null
-                    && !u.UserDetails.IsDeleted)
+                    && u.IsActive)
                 .Select(u => new SpeakerDto
                 {
                     Id = u.Id,
@@ -64,6 +92,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
                     Email = u.Email,
                     AdditionalInfo = u.UserDetails.AdditionalInfo,
                     Order = u.UserDetails.Order,
+                    IsActive = u.IsActive,
                 })
                 .FirstOrDefaultAsync();
 
@@ -102,7 +131,6 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 Patronymic = htmlSanitizer.Sanitize(speakerCreateDto.Patronymic),
                 Position = htmlSanitizer.Sanitize(speakerCreateDto.Position),
                 Order = speakerCreateDto.Order,
-                IsDeleted = false,
                 Created = DateTimeOffset.UtcNow,
             };
 
@@ -127,6 +155,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 Position = userDetails.Position,
                 Email = user.Email,
                 Order = userDetails.Order,
+                IsActive = user.IsActive,
                 GeneratedPassword = password,
             };
 
@@ -176,10 +205,11 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 Email = user.Email,
                 AdditionalInfo = user.UserDetails.AdditionalInfo,
                 Order = user.UserDetails.Order,
+                IsActive = user.IsActive,
             };
         }
 
-        public async Task DeleteAsync(Guid id)
+        public async Task SetActiveAsync(Guid id, bool isActive)
         {
             int speakerRoleId = (int)Core.Enums.UserRoles.Speaker;
 
@@ -193,8 +223,20 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 throw new InvalidOperationException("Спикер не найден");
             }
 
-            user.UserDetails.IsDeleted = true;
-            user.UserDetails.Updated = DateTimeOffset.UtcNow;
+            if (!isActive)
+            {
+                int activeCount = await dataContext.Users
+                    .CountAsync(u => u.UserRoleId == speakerRoleId && u.IsActive);
+
+                if (activeCount <= 1)
+                {
+                    throw new InvalidOperationException(
+                        "Нельзя деактивировать последнего активного спикера");
+                }
+            }
+
+            user.IsActive = isActive;
+            user.Updated = DateTimeOffset.UtcNow;
 
             await dataContext.SaveChangesAsync();
         }

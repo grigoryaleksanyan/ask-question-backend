@@ -8,7 +8,6 @@
         public string? Patronymic { get; set; }
         public string? Position { get; set; }
         public string? AdditionalInfo { get; set; }
-        public bool IsDeleted { get; set; }
         public DateTimeOffset Created { get; set; }
         public DateTimeOffset? Updated { get; set; }
 

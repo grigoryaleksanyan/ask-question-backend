@@ -11,5 +11,6 @@ namespace AskQuestion.BLL.Repositories.Interfaces
         Task ResetPasswordAsync(ResetPasswordDto dto);
         Task<bool> IsAdminExistsAsync();
         Task<UserDto> SetupAdminAsync(AdminSetupDto dto);
+        Task SetActiveAsync(Guid id, bool isActive, Core.Enums.UserRoles role);
     }
 }

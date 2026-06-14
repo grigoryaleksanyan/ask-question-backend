@@ -1,6 +1,7 @@
 ﻿using AskQuestion.BLL.DTO.User;
 using AskQuestion.BLL.Repositories.Interfaces;
 using AskQuestion.Core.Constants;
+using AskQuestion.Core.Enums;
 using AskQuestion.WebApi.Models.Request.User;
 using AskQuestion.WebApi.Models.Response.User;
 using Microsoft.AspNetCore.Authorization;
@@ -52,6 +53,7 @@ namespace AskQuestion.WebApi.Controllers
                 Id = userDto.Id,
                 Email = userDto.Email,
                 UserRoleId = userDto.UserRoleId,
+                IsActive = userDto.IsActive,
                 UserDetails = userDto.UserDetails is not null ? new UserDetailsViewModel()
                 {
                     Id = userDto.UserDetails.Id,
@@ -59,9 +61,7 @@ namespace AskQuestion.WebApi.Controllers
                     LastName = userDto.UserDetails.LastName,
                     Patronymic = userDto.UserDetails.Patronymic,
                     Position = userDto.UserDetails.Position,
-
                     AdditionalInfo = userDto.UserDetails.AdditionalInfo,
-                    IsDeleted = userDto.UserDetails.IsDeleted,
                 } : null,
                 Created = userDto.Created,
                 Updated = userDto.Updated,
@@ -98,6 +98,26 @@ namespace AskQuestion.WebApi.Controllers
             };
 
             await _userRepository.ChangePassword(userPasswordUpdateDto);
+
+            return Ok();
+        }
+
+        [HttpPut("SetActive")]
+        [Authorize(Roles = UserStringRoles.ADMINISTRATORS_ONLY)]
+        public async Task<IActionResult> SetActive(UserSetActiveModel model)
+        {
+            try
+            {
+                await _userRepository.SetActiveAsync(model.Id, model.IsActive, Core.Enums.UserRoles.Administrator);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound("Пользователь не найден");
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
 
             return Ok();
         }

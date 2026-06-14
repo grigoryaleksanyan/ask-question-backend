@@ -15,7 +15,9 @@
         /// <summary>
 		/// Идентификатор роли пользователя.
 		/// </summary>
-		public int UserRoleId { get; set; }
+        public int UserRoleId { get; set; }
+
+        public bool IsActive { get; set; } = true;
 
         #region Навигационные свойства
 

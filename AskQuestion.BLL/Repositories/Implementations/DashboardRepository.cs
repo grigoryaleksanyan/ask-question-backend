@@ -154,7 +154,7 @@ public class DashboardRepository(DataContext dataContext) : IDashboardRepository
         var speakerNames = await dataContext.Users
             .AsNoTracking()
             .Include(u => u.UserDetails)
-            .Where(u => speakerIds.Contains(u.Id) && u.UserDetails != null && !u.UserDetails.IsDeleted)
+            .Where(u => speakerIds.Contains(u.Id) && u.UserDetails != null && u.IsActive)
             .ToDictionaryAsync(
                 u => u.Id,
                 u => u.UserDetails!.GetFullName());
@@ -192,7 +192,7 @@ public class DashboardRepository(DataContext dataContext) : IDashboardRepository
         var speakerNames = await dataContext.Users
             .AsNoTracking()
             .Include(u => u.UserDetails)
-            .Where(u => speakerIds.Contains(u.Id) && u.UserDetails != null && !u.UserDetails.IsDeleted)
+            .Where(u => speakerIds.Contains(u.Id) && u.UserDetails != null && u.IsActive)
             .ToDictionaryAsync(
                 u => u.Id,
                 u => u.UserDetails!.GetFullName());

@@ -84,6 +84,7 @@ namespace AskQuestion.WebApi.Controllers
                 Id = userDto.Id,
                 Email = userDto.Email,
                 UserRoleId = userDto.UserRoleId,
+                IsActive = userDto.IsActive,
                 UserDetails = userDto.UserDetails is not null ? new UserDetailsViewModel()
                 {
                     Id = userDto.UserDetails.Id,
@@ -92,7 +93,6 @@ namespace AskQuestion.WebApi.Controllers
                     Patronymic = userDto.UserDetails.Patronymic,
                     Position = userDto.UserDetails.Position,
                     AdditionalInfo = userDto.UserDetails.AdditionalInfo,
-                    IsDeleted = userDto.UserDetails.IsDeleted,
                     Created = userDto.UserDetails.Created,
                     Updated = userDto.UserDetails.Updated,
                 } : null,
@@ -157,6 +157,7 @@ namespace AskQuestion.WebApi.Controllers
                 Id = userDto.Id,
                 Email = userDto.Email,
                 UserRoleId = userDto.UserRoleId,
+                IsActive = userDto.IsActive,
                 UserDetails = userDto.UserDetails is not null ? new UserDetailsViewModel()
                 {
                     Id = userDto.UserDetails.Id,
@@ -165,7 +166,6 @@ namespace AskQuestion.WebApi.Controllers
                     Patronymic = userDto.UserDetails.Patronymic,
                     Position = userDto.UserDetails.Position,
                     AdditionalInfo = userDto.UserDetails.AdditionalInfo,
-                    IsDeleted = userDto.UserDetails.IsDeleted,
                     Created = userDto.UserDetails.Created,
                     Updated = userDto.UserDetails.Updated,
                 } : null,

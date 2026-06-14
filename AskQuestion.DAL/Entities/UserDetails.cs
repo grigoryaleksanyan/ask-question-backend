@@ -14,8 +14,6 @@
 
         public string? AdditionalInfo { get; set; }
 
-        public bool IsDeleted { get; set; }
-
         public int Order { get; set; }
 
         #region Навигационные свойства
