@@ -1,7 +1,9 @@
+using Microsoft.Extensions.Options;
+
 namespace AskQuestion.BLL.Email
 {
-    public class SmtpEmailClientFactory(SmtpSettings settings) : IEmailClientFactory
+    public class SmtpEmailClientFactory(IOptions<SmtpSettings> options) : IEmailClientFactory
     {
-        public IEmailClient CreateClient() => new SmtpEmailClient(settings);
+        public IEmailClient CreateClient() => new SmtpEmailClient(options.Value);
     }
 }
