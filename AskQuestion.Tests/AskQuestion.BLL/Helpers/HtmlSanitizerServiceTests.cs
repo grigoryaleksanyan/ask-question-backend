@@ -61,7 +61,8 @@ public class HtmlSanitizerServiceTests
         var result = _sanitizer.Sanitize("<p style=\"color:red; font-size:20px\">Styled</p>");
 
         result.Should().Contain("<p>");
-        result.Should().NotContain("style");
+        result.Should().NotContain("style=");
+        result.Should().NotContain("color:red");
     }
 
     [Fact]
