@@ -21,7 +21,5 @@ namespace AskQuestion.WebApi.Models.Request.User
 
         [Required(AllowEmptyStrings = false, ErrorMessage = "Фамилия должна быть указана.")]
         public string LastName { get; set; } = null!;
-
-        public string? Patronymic { get; set; }
     }
 }

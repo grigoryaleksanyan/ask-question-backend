@@ -10,8 +10,6 @@ namespace AskQuestion.WebApi.Models.Request.Speaker
         [Required(AllowEmptyStrings = false, ErrorMessage = "Фамилия должна быть указана.")]
         public string LastName { get; set; } = null!;
 
-        public string? Patronymic { get; set; }
-
         public string? Position { get; set; }
 
         [Required(AllowEmptyStrings = false, ErrorMessage = "Почта спикера должна быть указана.")]
