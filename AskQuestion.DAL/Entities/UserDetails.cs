@@ -8,11 +8,7 @@
 
         public string LastName { get; set; } = null!;
 
-        public string? Patronymic { get; set; }
-
         public string? Position { get; set; }
-
-        public string? AdditionalInfo { get; set; }
 
         public int Order { get; set; }
 
@@ -24,7 +20,7 @@
 
         public string GetFullName()
         {
-            return string.Join(" ", new[] { LastName, FirstName, Patronymic }.Where(s => !string.IsNullOrEmpty(s)));
+            return string.Join(" ", new[] { LastName, FirstName }.Where(s => !string.IsNullOrEmpty(s)));
         }
     }
 }
