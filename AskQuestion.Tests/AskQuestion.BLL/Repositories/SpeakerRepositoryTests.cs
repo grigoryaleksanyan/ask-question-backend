@@ -228,7 +228,7 @@ public class SpeakerRepositoryTests : RepositoryTestBase
             Id = speaker.Id,
             Email = "updated@test.com",
             FirstName = "<script>bad</script>Updated",
-            LastName = "Speaker",
+            LastName = "<script>bad</script>Speaker",
             Patronymic = "<script>bad</script>Patronymic",
             Position = "<script>bad</script>Position",
             AdditionalInfo = "<script>bad</script>Info",
