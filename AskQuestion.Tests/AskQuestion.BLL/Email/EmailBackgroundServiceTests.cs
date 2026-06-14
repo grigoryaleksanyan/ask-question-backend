@@ -1,4 +1,5 @@
 using AskQuestion.BLL.Email;
+using AskQuestion.BLL.Tests.Helpers;
 using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -7,7 +8,7 @@ namespace AskQuestion.BLL.Tests.Email;
 
 public class EmailBackgroundServiceTests
 {
-    private readonly EmailSender _emailSender = new();
+    private readonly FakeEmailSender _emailSender = new();
     private readonly FakeEmailClientFactory _factory = new();
     private readonly IOptions<SmtpSettings> _settings = Options.Create(new SmtpSettings
     {
@@ -35,7 +36,7 @@ public class EmailBackgroundServiceTests
 
         using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(500));
         await service.StartAsync(cts.Token);
-        await Task.Delay(100);
+        await _factory.Client.WaitForMessageCountAsync(1, cts.Token);
         await service.StopAsync(CancellationToken.None);
 
         _factory.Client.SentMessages.Should().ContainSingle();
@@ -65,7 +66,7 @@ public class EmailBackgroundServiceTests
 
         using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(500));
         await service.StartAsync(cts.Token);
-        await Task.Delay(100);
+        await _factory.Client.WaitForMessageCountAsync(1, cts.Token);
         await service.StopAsync(CancellationToken.None);
 
         _factory.Client.SentMessages.Should().ContainSingle();
