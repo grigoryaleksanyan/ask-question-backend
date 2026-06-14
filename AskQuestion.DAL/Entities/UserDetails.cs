@@ -16,6 +16,8 @@
 
         public bool IsDeleted { get; set; }
 
+        public int Order { get; set; }
+
         #region Навигационные свойства
 
         public User User { get; set; }
