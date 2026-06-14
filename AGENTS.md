@@ -128,7 +128,11 @@ Cookie-аутентификация (`CookieAuthenticationDefaults.Authenticatio
 | `EmailSender` | Реализация через `Channel<EmailMessage>` (producer-consumer, unbounded), Singleton |
 | `EmailMessage` | DTO: ToEmail, ToName, Subject, HtmlBody |
 | `SmtpSettings` | Конфигурация SMTP: Host, Port, FromEmail, FromName, BaseUrl |
-| `EmailBackgroundService` | BackgroundService, читает из Channel и отправляет через `SmtpClient` |
+| `IEmailClient` | Интерфейс SMTP-клиента: `SendAsync(MailMessage, CancellationToken)` |
+| `SmtpEmailClient` | Реализация `IEmailClient` через `SmtpClient` |
+| `IEmailClientFactory` | Фабрика для создания `IEmailClient` |
+| `SmtpEmailClientFactory` | Реализация фабрики на основе `IOptions<SmtpSettings>` |
+| `EmailBackgroundService` | BackgroundService, читает из Channel и отправляет через `IEmailClientFactory` |
 | `EmailTemplateBuilder` | Статический класс с HTML-шаблонами писем |
 
 Шаблоны писем:
@@ -136,7 +140,7 @@ Cookie-аутентификация (`CookieAuthenticationDefaults.Authenticatio
 2. `BuildSpeakerCredentials` — отправка реквизитов доступа спикеру при создании (вызывается в `SpeakerRepository.CreateAsync`)
 3. `BuildPasswordResetEmail` — письмо со ссылкой для сброса пароля (вызывается в `UserRepository.ForgotPasswordAsync`)
 
-DI-регистрация: `ConfigureEmail()` в `IServiceCollectionExtensions` — `IOptions<SmtpSettings>`, `IEmailSender` → `EmailSender` (Singleton), `EmailBackgroundService` (HostedService).
+DI-регистрация: `ConfigureEmail()` в `IServiceCollectionExtensions` — `IOptions<SmtpSettings>`, `IEmailSender` → `EmailSender` (Singleton), `IEmailClientFactory` → `SmtpEmailClientFactory` (Singleton), `EmailBackgroundService` (HostedService).
 
 Конфигурация SMTP в `appsettings.json` → `Smtp`: Host `localhost`, Port `1025`, FromEmail `noreply@askquestion.local`, FromName `Ask Question`, BaseUrl `http://localhost:5000`.
 
