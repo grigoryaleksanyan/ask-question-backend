@@ -19,22 +19,47 @@ AskQuestion.BLL.Tests → BLL, DAL, Core
 | Проект | Назначение |
 |--------|-----------|
 | `AskQuestion.Core` | Enums (`UserRoles`, `VoteType`, `QuestionStatus`), Constants (`UserStringRoles`) — без зависимостей |
-| `AskQuestion.DAL` | EF Core + Npgsql, сущности, `DataContext`, миграции |
+| `AskQuestion.DAL` | EF Core + Npgsql (`10.0.2`), сущности, `DataContext`, миграции. Пакеты: `BCrypt.Net-Next` 4.2.0 |
 | `AskQuestion.BLL` | Репозитории (интерфейсы + реализации), DTO, Email-подсистема. Пакеты: `HtmlSanitizer` 9.0.892, `Microsoft.Extensions.Hosting.Abstractions` 10.0.8 |
-| `AskQuestion.WebApi` | Controllers, Request/Response модели, Program.cs, Extensions, ActionFilters |
-| `AskQuestion.BLL.Tests` | xUnit-тесты BLL-репозиториев. Пакеты: `xunit` 2.9.3, `FluentAssertions` 8.10.0, `Microsoft.EntityFrameworkCore.InMemory` 10.0.9, `coverlet.collector` 6.0.4 |
+| `AskQuestion.WebApi` | Controllers, Request/Response модели, Program.cs, Extensions, ActionFilters. Пакеты: `BCrypt.Net-Next` 4.2.0, `SkiaSharp` 3.119.4, `SkiaSharp.NativeAssets.Linux.NoDependencies` 3.119.4, `Swashbuckle.AspNetCore` 10.1.7, `Swashbuckle.AspNetCore.Filters` 10.0.1, `Microsoft.EntityFrameworkCore.Design` 10.0.8, `Microsoft.EntityFrameworkCore.Tools` 10.0.8 |
+| `AskQuestion.BLL.Tests` | xUnit-тесты BLL-репозиториев, Email-подсистемы, HtmlSanitizer. Пакеты: `xunit` 2.9.3, `FluentAssertions` 8.10.0, `Microsoft.EntityFrameworkCore.InMemory` 10.0.9, `BCrypt.Net-Next` 4.2.0, `Microsoft.NET.Test.Sdk` 17.14.1, `xunit.runner.visualstudio` 3.1.4, `coverlet.collector` 6.0.4 |
 
 Слой DAL → BLL — **нет**. BLL ссылается на DAL (и Core). WebApi ссылается на BLL и DAL напрямую (для `DataContext` в DI).
 
 ## Тесты
 
-Проект `AskQuestion.Tests/AskQuestion.BLL/AskQuestion.BLL.Tests.csproj` (net10.0, xUnit). Тестирует репозитории BLL на изолированном in-memory `DataContext`:
+Проект `AskQuestion.Tests/AskQuestion.BLL/AskQuestion.BLL.Tests.csproj` (net10.0, xUnit). Тестирует репозитории BLL, Email-подсистему и HtmlSanitizer на изолированном in-memory `DataContext`:
 
-| Класс / файл | Что покрывает |
-|--------------|---------------|
+**Репозитории** (каталог `Repositories/`):
+
+| Класс | Что покрывает |
+|-------|---------------|
 | `UserRepositoryTests` | авторизация, сброс пароля, изменение пароля, soft-delete |
 | `QuestionRepositoryTests` | создание, пагинация, голосование, смена статуса, просмотры, популярные вопросы |
 | `SpeakerRepositoryTests` | создание, обновление, удаление (soft-delete), порядок спикеров |
+| `AreaRepositoryTests` | CRUD, порядок |
+| `FaqCategoryRepositoryTests` | CRUD, порядок, записи внутри категории |
+| `FaqEntryRepositoryTests` | CRUD, порядок |
+| `FeedbackRepositoryTests` | CRUD |
+| `QuestionStatusTransitionRepositoryTests` | логирование переходов статусов |
+
+**Email-подсистема** (каталог `Email/`):
+
+| Класс | Что покрывает |
+|-------|---------------|
+| `EmailSenderTests` | постановка в Channel, чтение из ChannelReader |
+| `EmailBackgroundServiceTests` | обработка сообщений из Channel через IEmailClientFactory |
+| `EmailTemplateBuilderTests` | генерация HTML-шаблонов писем |
+| `SmtpEmailClientTests` | отправка через SmtpClient |
+| `SmtpEmailClientFactoryTests` | создание клиента из IOptions<SmtpSettings> |
+| `FakeEmailClient` | фейк `IEmailClient` для тестов, не отправляет реальные письма |
+| `FakeEmailClientFactory` | фейк `IEmailClientFactory` для тестов |
+
+**Helpers** (каталог `Helpers/`):
+
+| Класс | Что покрывает |
+|-------|---------------|
+| `HtmlSanitizerServiceTests` | санитизация HTML-контента |
 | `RepositoryTestBase` | базовый класс: in-memory `DbContext`, `HtmlSanitizer`, `FakeEmailSender`, `IOptions<SmtpSettings>` |
 | `TestDataSeeder` | хелперы для seed пользователей, областей, вопросов и токенов сброса пароля |
 | `FakeEmailSender` | фейк `IEmailSender` для тестов, не отправляет реальные письма |
@@ -234,7 +259,7 @@ AuthController.Setup и Login добавляют заголовки `X-Content-T
 - **Сессия**: используется `AddDistributedMemoryCache` + `AddSession` — только для хранения текста капчи. Cookie: `.WebApi.Session`
 - **Swagger**: доступен только в Development, XML-документация инжектируется (`GenerateDocumentationFile` + `NoWarn(1591)`)
 - **Dockerfile**: обновлён до .NET 10.0. Копирует `Roboto.ttf` в `/usr/share/fonts/` (для капчи через SkiaSharp). `EXPOSE 80`
-- **BCrypt.Net-Next**: дублируется в WebApi и DAL
+- **BCrypt.Net-Next**: дублируется в WebApi, DAL и BLL.Tests
 - **RuntimeMigrations helper**: файл `Helpers/RuntimeMigrations.cs` существует, но не используется — Program.cs применяет миграции инлайн
 - **IQuestionRepository**: находится в `AskQuestion.BLL.Repositories.Interfaces` (согласовано с остальными интерфейсами)
 - **SpeakerCreatedDto**: при создании спикера ответ содержит `GeneratedPassword` (сгенерированный пароль)
