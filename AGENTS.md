@@ -19,7 +19,7 @@ WebApi → DAL
 |--------|-----------|
 | `AskQuestion.Core` | Enums (`UserRoles`, `VoteType`, `QuestionStatus`), Constants (`UserStringRoles`) — без зависимостей |
 | `AskQuestion.DAL` | EF Core + Npgsql, сущности, `DataContext`, миграции |
-| `AskQuestion.BLL` | Репозитории (интерфейсы + реализации), DTO, Email-подсистема |
+| `AskQuestion.BLL` | Репозитории (интерфейсы + реализации), DTO, Email-подсистема. Пакеты: `HtmlSanitizer` 9.0.892, `Microsoft.Extensions.Hosting.Abstractions` 10.0.8 |
 | `AskQuestion.WebApi` | Controllers, Request/Response модели, Program.cs, Extensions, ActionFilters |
 
 Слой DAL → BLL — **нет**. BLL ссылается на DAL (и Core). WebApi ссылается на BLL и DAL напрямую (для `DataContext` в DI).
@@ -31,8 +31,8 @@ PostgreSQL 16.1 через Npgsql EF Core provider. Контекст: `AskQuesti
 - Соединение: `appsettings.json` → `ConnectionStrings:PostgreSQL` (host `localhost`, port `5432`, db `AskQuestionDb`, user `postgres`, password `12345`)
 - Миграции: `AskQuestion.DAL/Migrations/`. Применяются **автоматически** при старте (`dbContext.Database.Migrate()` в `Program.cs`)
 - Seed: **только две роли** (Administrator, Speaker) — через `OnModelCreating`. Администратор больше не сидируется — создаётся через API при первичной настройке
-- Расширение PostgreSQL: `uuid-ossp`
-- Первичные ключи: `Guid` (через `uuid-ossp`), базовая сущность `BaseEntity` (`Id`, `Created`, `Updated`)
+- Расширение PostgreSQL: `uuid-ossp` (подключено, но не используется для генерации ключей)
+- Первичные ключи: `Guid`, генерируются на стороне EF Core (`ValueGeneratedOnAdd`). Базовая сущность `BaseEntity` (`Id`, `Created`, `Updated`)
 
 Создание миграции (из корня решения):
 ```
@@ -45,7 +45,7 @@ dotnet ef migrations add <Name> --project AskQuestion.DAL --startup-project AskQ
 |---------|-----------|------|-----------|
 | `BaseEntity` | — | `Guid Id` | `Created`, `Updated` — колонки с латиницей (миграция `RenameCyrillicCreatedColumn`) |
 | `User` | BaseEntity | Guid | Email (unique index), Password (BCrypt), UserRoleId FK → UserRole |
-| `UserDetails` | BaseEntity | Guid | UserId FK → User, FirstName, LastName, Patronymic, Position, AdditionalInfo, IsDeleted. Метод `GetFullName()` (LastName + FirstName + Patronymic) |
+| `UserDetails` | BaseEntity | Guid | UserId FK → User, FirstName, LastName, Patronymic, Position, AdditionalInfo, IsDeleted, Order. Метод `GetFullName()` (LastName + FirstName + Patronymic) |
 | `UserRole` | — | `int UserRoleId` | Не наследует BaseEntity. Seed: 1=Administrator, 2=Speaker |
 | `Question` | BaseEntity | Guid | Text, Author, AreaId? FK→Area (SetNull), SpeakerId? FK→User (SetNull), Views, Likes, Dislikes, Status (int), Comment?, Answered? |
 | `QuestionStatusTransition` | BaseEntity | Guid | QuestionId FK→Question (Cascade), FromStatus (int), ToStatus (int), ChangedByUserId? FK→User (SetNull) |
@@ -54,6 +54,7 @@ dotnet ef migrations add <Name> --project AskQuestion.DAL --startup-project AskQ
 | `FaqCategory` | BaseEntity | Guid | Name, Order, Nav: FaqEntries |
 | `FaqEntry` | BaseEntity | Guid | FaqCategoryId FK, Question, Answer, Order |
 | `Feedback` | BaseEntity | Guid | Username, Email, Theme, Text |
+| `PasswordResetToken` | BaseEntity | Guid | UserId FK → User, TokenHash, ExpiresAt, IsUsed. Одноразовый токен сброса пароля (хеш SHA256, TTL 1 час) |
 
 ## Enum'ы (Core)
 
@@ -73,14 +74,14 @@ Cookie-аутентификация (`CookieAuthenticationDefaults.Authenticatio
 
 | Контроллер | Маршрут | Авторизация |
 |-----------|---------|-------------|
-| `AuthController` | `api/Auth` | SetupRequired, Setup, Login — анонимно; Logout — Admin+Speaker |
+| `AuthController` | `api/Auth` | SetupRequired, Setup, Login, ForgotPassword, ResetPassword — анонимно; Logout — Admin+Speaker |
 | `QuestionController` | `api/Question` | GetCaptcha, GetAll, GetPopularQuestions, GetById, Like, Dislike, Create — анонимно; ChangeStatus (`{id}/status`), SetComment (`{id}/comment`) — Admin+Speaker (Speaker только для своих вопросов); Update, Delete — Admin |
 | `FaqCategoryController` | `api/FaqCategory` | GetAllWithEntries — анонимно; GetAllWithEntriesForAdmin — Admin; GetAll, GetById, Create, Update, Delete, SetOrder — Admin |
 | `FaqEntryController` | `api/FaqEntry` | Весь контроллер — Authorize на уровне класса; GetAll, GetById, Create, Update, Delete, SetOrder — Admin |
 | `FeedbackController` | `api/Feedback` | Create — анонимно; GetAll, Delete — Admin |
 | `AreaController` | `api/Area` | GetAll — анонимно; Create, Update, Delete, SetOrder — Admin |
 | `UserController` | `api/User` | GetUserData, ChangePassword — Admin+Speaker |
-| `SpeakerController` | `api/Speaker` | GetAllPublic — анонимно; GetAll, GetById, Create, Update, Delete — Admin |
+| `SpeakerController` | `api/Speaker` | GetAllPublic — анонимно; GetAll, GetById, Create, Update, Delete, SetOrder — Admin |
 | `DashboardController` | `api/Dashboard` | Summary — Admin |
 
 ## Ключевые функции
@@ -92,6 +93,13 @@ Cookie-аутентификация (`CookieAuthenticationDefaults.Authenticatio
 - `POST api/Auth/Setup` — создаёт первого администратора (только если админа нет). Принимает `AdminSetupModel` (Email, Password, ConfirmPassword, FirstName, LastName, Patronymic?). Автоматически логинит созданного пользователя
 
 Миграция `RemoveAdminSeedData` убрала хардкод-сид админа.
+
+### Сброс пароля
+
+Реализован через сущность `PasswordResetToken` (миграция `AddPasswordResetToken`).
+- `POST api/Auth/ForgotPassword` — создаёт токен, отправляет письмо со ссылкой на сброс (токен хранится как SHA256-хеш, TTL 1 час).
+- `POST api/Auth/ResetPassword` — проверяет токен и устанавливает новый пароль.
+- `UserRepository` содержит `ForgotPasswordAsync` и `ResetPasswordAsync`.
 
 ### Email-подсистема
 
@@ -109,6 +117,7 @@ Cookie-аутентификация (`CookieAuthenticationDefaults.Authenticatio
 Шаблоны писем:
 1. `BuildNewQuestionNotification` — уведомление спикеру о новом вопросе (вызывается в `QuestionRepository.CreateAsync`)
 2. `BuildSpeakerCredentials` — отправка реквизитов доступа спикеру при создании (вызывается в `SpeakerRepository.CreateAsync`)
+3. `BuildPasswordResetEmail` — письмо со ссылкой для сброса пароля (вызывается в `UserRepository.ForgotPasswordAsync`)
 
 DI-регистрация: `ConfigureEmail()` в `IServiceCollectionExtensions` — `IOptions<SmtpSettings>`, `IEmailSender` → `EmailSender` (Singleton), `EmailBackgroundService` (HostedService).
 
@@ -149,7 +158,7 @@ Toggle-голосование (анонимное, по VisitorId). Cookie `Visi
 | TotalFeedback | int | Кол-во обращений обратной связи |
 | TotalAreas | int | Кол-во областей |
 | QuestionsWithoutSpeaker | int | Вопросы без спикера |
-| ByStatus | StatusDistributionDto | Распределение по статусам |
+| ByStatus | `List<StatusDistributionDto>` | Распределение по статусам |
 | Timeline | TimelinePointDto[] | График по дням (Date, NewCount, AnsweredCount) |
 | ByArea | AreaDistributionDto[] | Распределение по областям |
 | TopSpeakers | SpeakerProductivityDto[] | Топ спикеров |
@@ -160,13 +169,17 @@ Toggle-голосование (анонимное, по VisitorId). Cookie `Visi
 
 `SpeakerRepository.DeleteAsync` не удаляет спикера физически — устанавливает `user.UserDetails.IsDeleted = true`. Удалённые спикеры не могут авторизоваться (`UserRepository.AuthorizeUser` возвращает `null` для soft-deleted пользователей).
 
+### Порядок спикеров
+
+`UserDetails` содержит поле `Order` (int), добавлено миграцией `AddSpeakerOrder`. `SpeakerController` предоставляет `PUT api/Speaker/SetOrder` для задания порядка спикеров (Admin). `SpeakerDto` и `SpeakerCreatedDto` также содержат `Order`.
+
 ### Капча
 
 `GenerateCaptcha` (`AskQuestion.WebApi/Helpers/GenerateCaptcha.cs`) — статический класс, генерирует капчу через SkiaSharp (Base64-изображение). Текст капчи хранится в сессии.
 
 ### HtmlSanitizer
 
-`AskQuestion.BLL/Helpers/HtmlSanitizerService.cs` — реализация `IHtmlSanitizerService`, синглтон. Регистрируется через `ConfigureHtmlSanitizer()` в DI. Используется для санитизации HTML-контента.
+`AskQuestion.BLL/Helpers/HtmlSanitizerService.cs` — реализация `IHtmlSanitizerService`, синглтон. Регистрируется через `ConfigureHtmlSanitizer()` в DI. Используется для санитизации HTML-контента в репозиториях: вопросы, FAQ (категории и записи), области, спикеры, первичная настройка администратора.
 
 ### Security headers
 
@@ -204,4 +217,4 @@ AuthController.Setup и Login добавляют заголовки `X-Content-T
 - **RuntimeMigrations helper**: файл `Helpers/RuntimeMigrations.cs` существует, но не используется — Program.cs применяет миграции инлайн
 - **IQuestionRepository**: находится в `AskQuestion.BLL.Repositories.Interfaces` (согласовано с остальными интерфейсами)
 - **SpeakerCreatedDto**: при создании спикера ответ содержит `GeneratedPassword` (сгенерированный пароль)
-- **appsettings.Development.json**: существует, переопределяет уровень логирования
+- **appsettings.Development.json**: существует, содержит настройки логирования (в текущей конфигурации совпадают с `appsettings.json`)
