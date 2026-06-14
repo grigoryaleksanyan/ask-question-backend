@@ -31,10 +31,8 @@ namespace AskQuestion.BLL.Repositories.Implementations
                     Id = u.Id,
                     FirstName = u.UserDetails.FirstName,
                     LastName = u.UserDetails.LastName,
-                    Patronymic = u.UserDetails.Patronymic,
                     Position = u.UserDetails.Position,
                     Email = u.Email,
-                    AdditionalInfo = u.UserDetails.AdditionalInfo,
                     Order = u.UserDetails.Order,
                     IsActive = u.IsActive,
                 })
@@ -59,10 +57,8 @@ namespace AskQuestion.BLL.Repositories.Implementations
                     Id = u.Id,
                     FirstName = u.UserDetails.FirstName,
                     LastName = u.UserDetails.LastName,
-                    Patronymic = u.UserDetails.Patronymic,
                     Position = u.UserDetails.Position,
                     Email = u.Email,
-                    AdditionalInfo = u.UserDetails.AdditionalInfo,
                     Order = u.UserDetails.Order,
                     IsActive = u.IsActive,
                 })
@@ -87,10 +83,8 @@ namespace AskQuestion.BLL.Repositories.Implementations
                     Id = u.Id,
                     FirstName = u.UserDetails.FirstName,
                     LastName = u.UserDetails.LastName,
-                    Patronymic = u.UserDetails.Patronymic,
                     Position = u.UserDetails.Position,
                     Email = u.Email,
-                    AdditionalInfo = u.UserDetails.AdditionalInfo,
                     Order = u.UserDetails.Order,
                     IsActive = u.IsActive,
                 })
@@ -128,7 +122,6 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 UserId = userId,
                 FirstName = htmlSanitizer.Sanitize(speakerCreateDto.FirstName),
                 LastName = htmlSanitizer.Sanitize(speakerCreateDto.LastName),
-                Patronymic = htmlSanitizer.Sanitize(speakerCreateDto.Patronymic),
                 Position = htmlSanitizer.Sanitize(speakerCreateDto.Position),
                 Order = speakerCreateDto.Order,
                 Created = DateTimeOffset.UtcNow,
@@ -151,7 +144,6 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 Id = user.Id,
                 FirstName = userDetails.FirstName,
                 LastName = userDetails.LastName,
-                Patronymic = userDetails.Patronymic,
                 Position = userDetails.Position,
                 Email = user.Email,
                 Order = userDetails.Order,
@@ -188,9 +180,7 @@ namespace AskQuestion.BLL.Repositories.Implementations
             user.Updated = DateTimeOffset.UtcNow;
             user.UserDetails.FirstName = htmlSanitizer.Sanitize(speakerUpdateDto.FirstName);
             user.UserDetails.LastName = htmlSanitizer.Sanitize(speakerUpdateDto.LastName);
-            user.UserDetails.Patronymic = htmlSanitizer.Sanitize(speakerUpdateDto.Patronymic);
             user.UserDetails.Position = htmlSanitizer.Sanitize(speakerUpdateDto.Position);
-            user.UserDetails.AdditionalInfo = htmlSanitizer.Sanitize(speakerUpdateDto.AdditionalInfo);
             user.UserDetails.Updated = DateTimeOffset.UtcNow;
 
             await dataContext.SaveChangesAsync();
@@ -200,10 +190,8 @@ namespace AskQuestion.BLL.Repositories.Implementations
                 Id = user.Id,
                 FirstName = user.UserDetails.FirstName,
                 LastName = user.UserDetails.LastName,
-                Patronymic = user.UserDetails.Patronymic,
                 Position = user.UserDetails.Position,
                 Email = user.Email,
-                AdditionalInfo = user.UserDetails.AdditionalInfo,
                 Order = user.UserDetails.Order,
                 IsActive = user.IsActive,
             };
