@@ -341,4 +341,167 @@ public class QuestionRepositoryTests : RepositoryTestBase
         var deleted = await DataContext.Questions.FindAsync(question.Id);
         deleted.Should().BeNull();
     }
+
+    [Fact]
+    public async Task GetUserVoteAsync_ReturnsVote_WhenExists()
+    {
+        var question = await TestDataSeeder.SeedQuestionAsync(DataContext);
+        var visitor = Guid.NewGuid();
+        var repo = new QuestionRepository(DataContext, EmailSender, SmtpSettings, HtmlSanitizer);
+        await repo.ToggleLikeAsync(question.Id, visitor);
+
+        var result = await repo.GetUserVoteAsync(question.Id, visitor);
+
+        result.Should().Be(VoteType.Like);
+    }
+
+    [Fact]
+    public async Task GetUserVoteAsync_ReturnsNull_WhenNotExists()
+    {
+        var question = await TestDataSeeder.SeedQuestionAsync(DataContext);
+        var visitor = Guid.NewGuid();
+        var repo = new QuestionRepository(DataContext, EmailSender, SmtpSettings, HtmlSanitizer);
+
+        var result = await repo.GetUserVoteAsync(question.Id, visitor);
+
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ToggleLikeAsync_ChangesDislikeToLike()
+    {
+        var question = await TestDataSeeder.SeedQuestionAsync(DataContext);
+        var visitor = Guid.NewGuid();
+        var repo = new QuestionRepository(DataContext, EmailSender, SmtpSettings, HtmlSanitizer);
+        await repo.ToggleDislikeAsync(question.Id, visitor);
+
+        var result = await repo.ToggleLikeAsync(question.Id, visitor);
+
+        result.Likes.Should().Be(1);
+        result.Dislikes.Should().Be(0);
+        result.UserVote.Should().Be(VoteType.Like);
+    }
+
+    [Fact]
+    public async Task ToggleDislikeAsync_AddsDislike_WhenNoVote()
+    {
+        var question = await TestDataSeeder.SeedQuestionAsync(DataContext);
+        var visitor = Guid.NewGuid();
+        var repo = new QuestionRepository(DataContext, EmailSender, SmtpSettings, HtmlSanitizer);
+
+        var result = await repo.ToggleDislikeAsync(question.Id, visitor);
+
+        result.Likes.Should().Be(0);
+        result.Dislikes.Should().Be(1);
+        result.UserVote.Should().Be(VoteType.Dislike);
+    }
+
+    [Fact]
+    public async Task ToggleDislikeAsync_RemovesDislike_WhenAlreadyDisliked()
+    {
+        var question = await TestDataSeeder.SeedQuestionAsync(DataContext);
+        var visitor = Guid.NewGuid();
+        var repo = new QuestionRepository(DataContext, EmailSender, SmtpSettings, HtmlSanitizer);
+        await repo.ToggleDislikeAsync(question.Id, visitor);
+
+        var result = await repo.ToggleDislikeAsync(question.Id, visitor);
+
+        result.Likes.Should().Be(0);
+        result.Dislikes.Should().Be(0);
+        result.UserVote.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetAllAsync_FiltersByAreaId()
+    {
+        var area = await TestDataSeeder.SeedAreaAsync(DataContext, "Area");
+        var repo = new QuestionRepository(DataContext, EmailSender, SmtpSettings, HtmlSanitizer);
+        await TestDataSeeder.SeedQuestionAsync(DataContext, areaId: area.Id);
+        await TestDataSeeder.SeedQuestionAsync(DataContext);
+
+        var result = await repo.GetAllAsync(areaId: area.Id);
+
+        result.Items.Should().ContainSingle(q => q.AreaId == area.Id);
+    }
+
+    [Fact]
+    public async Task GetAllAsync_SortsAscending()
+    {
+        var repo = new QuestionRepository(DataContext, EmailSender, SmtpSettings, HtmlSanitizer);
+        var q1 = await TestDataSeeder.SeedQuestionAsync(DataContext, text: "First");
+        var q2 = await TestDataSeeder.SeedQuestionAsync(DataContext, text: "Second");
+        q1.Created = DateTimeOffset.UtcNow.AddMinutes(-1);
+        q2.Created = DateTimeOffset.UtcNow;
+        await DataContext.SaveChangesAsync();
+
+        var result = await repo.GetAllAsync(sortOrder: "asc");
+
+        result.Items.First().Text.Should().Be("First");
+        result.Items.Last().Text.Should().Be("Second");
+    }
+
+    [Fact]
+    public async Task CreateAsync_DoesNotEnqueueEmail_WhenNoSpeaker()
+    {
+        var repo = new QuestionRepository(DataContext, EmailSender, SmtpSettings, HtmlSanitizer);
+
+        await repo.CreateAsync(new QuestionCreateDto
+        {
+            Text = "Question",
+            Author = "Author",
+        });
+
+        EmailSender.Messages.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task UpdateAsync_Throws_WhenNotFound()
+    {
+        var repo = new QuestionRepository(DataContext, EmailSender, SmtpSettings, HtmlSanitizer);
+        var area = await TestDataSeeder.SeedAreaAsync(DataContext);
+
+        Func<Task> act = async () => await repo.UpdateAsync(Guid.NewGuid(), new QuestionUpdateDto
+        {
+            Id = Guid.NewGuid(),
+            Text = "Updated",
+            Author = "Author",
+            AreaId = area.Id,
+        });
+
+        await act.Should().ThrowAsync<InvalidOperationException>();
+    }
+
+    [Fact]
+    public async Task DeleteAsync_Throws_WhenNotFound()
+    {
+        var repo = new QuestionRepository(DataContext, EmailSender, SmtpSettings, HtmlSanitizer);
+
+        Func<Task> act = async () => await repo.DeleteAsync(Guid.NewGuid());
+
+        await act.Should().ThrowAsync<InvalidOperationException>();
+    }
+
+    [Fact]
+    public async Task IncrementViewsAsync_DoesNothing_WhenNotFound()
+    {
+        var repo = new QuestionRepository(DataContext, EmailSender, SmtpSettings, HtmlSanitizer);
+
+        await repo.IncrementViewsAsync(Guid.NewGuid());
+
+        DataContext.Questions.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task SetCommentAsync_Throws_WhenNotFound()
+    {
+        var repo = new QuestionRepository(DataContext, EmailSender, SmtpSettings, HtmlSanitizer);
+
+        Func<Task> act = async () => await repo.SetCommentAsync(new QuestionCommentDto
+        {
+            QuestionId = Guid.NewGuid(),
+            Comment = "Comment",
+        });
+
+        await act.Should().ThrowAsync<InvalidOperationException>();
+    }
 }
