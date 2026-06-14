@@ -8,15 +8,18 @@ namespace AskQuestion.BLL.Email
     public class EmailBackgroundService : BackgroundService
     {
         private readonly EmailSender _emailSender;
+        private readonly IEmailClientFactory _emailClientFactory;
         private readonly SmtpSettings _smtpSettings;
         private readonly ILogger<EmailBackgroundService> _logger;
 
         public EmailBackgroundService(
             IEmailSender emailSender,
+            IEmailClientFactory emailClientFactory,
             IOptions<SmtpSettings> smtpSettings,
             ILogger<EmailBackgroundService> logger)
         {
             _emailSender = (EmailSender)emailSender;
+            _emailClientFactory = emailClientFactory;
             _smtpSettings = smtpSettings.Value;
             _logger = logger;
         }
@@ -38,8 +41,8 @@ namespace AskQuestion.BLL.Email
                     };
                     mailMessage.To.Add(new MailAddress(message.ToEmail, message.ToName));
 
-                    using var smtpClient = new SmtpClient(_smtpSettings.Host, _smtpSettings.Port);
-                    await smtpClient.SendMailAsync(mailMessage, stoppingToken);
+                    using var client = _emailClientFactory.CreateClient();
+                    await client.SendAsync(mailMessage, stoppingToken);
 
                     _logger.LogInformation("Email sent to {Email}", message.ToEmail);
                 }
