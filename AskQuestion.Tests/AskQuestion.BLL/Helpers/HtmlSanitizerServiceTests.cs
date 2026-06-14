@@ -54,4 +54,21 @@ public class HtmlSanitizerServiceTests
 
         result.Should().Contain("rel=\"noopener noreferrer\"");
     }
+
+    [Fact]
+    public void Sanitize_RemovesInlineStyles()
+    {
+        var result = _sanitizer.Sanitize("<p style=\"color:red; font-size:20px\">Styled</p>");
+
+        result.Should().Contain("<p>");
+        result.Should().NotContain("style");
+    }
+
+    [Fact]
+    public void Sanitize_RemovesJavaScriptScheme()
+    {
+        var result = _sanitizer.Sanitize("<a href=\"javascript:alert('xss')\">click</a>");
+
+        result.Should().NotContain("javascript");
+    }
 }

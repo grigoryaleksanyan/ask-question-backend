@@ -40,4 +40,16 @@ public class EmailTemplateBuilderTests
         result.Subject.Should().Contain("Восстановление");
         result.HtmlBody.Should().Contain("http://localhost/reset?token=abc");
     }
+
+    [Fact]
+    public void BuildNewQuestionNotification_TruncatesLongText()
+    {
+        var longText = new string('A', 250);
+        var result = EmailTemplateBuilder.BuildNewQuestionNotification(
+            "to@test.com", "Speaker", longText, "http://localhost/q/1");
+
+        result.HtmlBody.Should().Contain(new string('A', 200));
+        result.HtmlBody.Should().Contain("…");
+        result.HtmlBody.Should().NotContain(longText);
+    }
 }
