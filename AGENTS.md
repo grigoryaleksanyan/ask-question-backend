@@ -124,7 +124,7 @@ Cookie-аутентификация (`CookieAuthenticationDefaults.Authenticatio
 
 | Класс | Назначение |
 |-------|-----------|
-| `IEmailSender` | Интерфейс с методом `EnqueueAsync(EmailMessage)` |
+| `IEmailSender` | Интерфейс: `EnqueueAsync(EmailMessage)` и `GetReader()` (возвращает `ChannelReader<EmailMessage>`) |
 | `EmailSender` | Реализация через `Channel<EmailMessage>` (producer-consumer, unbounded), Singleton |
 | `EmailMessage` | DTO: ToEmail, ToName, Subject, HtmlBody |
 | `SmtpSettings` | Конфигурация SMTP: Host, Port, FromEmail, FromName, BaseUrl |
