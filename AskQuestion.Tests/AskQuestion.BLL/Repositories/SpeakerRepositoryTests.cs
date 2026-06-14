@@ -235,6 +235,7 @@ public class SpeakerRepositoryTests : RepositoryTestBase
         });
 
         result.FirstName.Should().NotContain("<script>");
+        result.LastName.Should().NotContain("<script>");
         result.Patronymic.Should().NotContain("<script>");
         result.Position.Should().NotContain("<script>");
         result.AdditionalInfo.Should().NotContain("<script>");

@@ -334,4 +334,23 @@ public class UserRepositoryTests : RepositoryTestBase
 
         await act.Should().ThrowAsync<InvalidOperationException>();
     }
+
+    [Fact]
+    public async Task SetupAdminAsync_SanitizesInput()
+    {
+        var repo = new UserRepository(DataContext, HtmlSanitizer, EmailSender, SmtpSettings);
+
+        var result = await repo.SetupAdminAsync(new AdminSetupDto
+        {
+            Email = "admin@test.com",
+            Password = "Password1",
+            FirstName = "<script>bad</script>Admin",
+            LastName = "<script>bad</script>Adminov",
+            Patronymic = "<script>bad</script>Patronymic",
+        });
+
+        result.UserDetails!.FirstName.Should().NotContain("<script>");
+        result.UserDetails.LastName.Should().NotContain("<script>");
+        result.UserDetails.Patronymic.Should().NotContain("<script>");
+    }
 }

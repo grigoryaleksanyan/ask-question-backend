@@ -484,11 +484,13 @@ public class QuestionRepositoryTests : RepositoryTestBase
     [Fact]
     public async Task IncrementViewsAsync_DoesNothing_WhenNotFound()
     {
+        var question = await TestDataSeeder.SeedQuestionAsync(DataContext, views: 5);
         var repo = new QuestionRepository(DataContext, EmailSender, SmtpSettings, HtmlSanitizer);
 
         await repo.IncrementViewsAsync(Guid.NewGuid());
 
-        DataContext.Questions.Should().BeEmpty();
+        var unchanged = await DataContext.Questions.FindAsync(question.Id);
+        unchanged!.Views.Should().Be(5);
     }
 
     [Fact]
@@ -501,6 +503,40 @@ public class QuestionRepositoryTests : RepositoryTestBase
             QuestionId = Guid.NewGuid(),
             Comment = "Comment",
         });
+
+        await act.Should().ThrowAsync<InvalidOperationException>();
+    }
+
+    [Fact]
+    public async Task ChangeStatusAsync_Throws_WhenQuestionNotFound()
+    {
+        var repo = new QuestionRepository(DataContext, EmailSender, SmtpSettings, HtmlSanitizer);
+
+        Func<Task> act = async () => await repo.ChangeStatusAsync(new QuestionStatusChangeDto
+        {
+            QuestionId = Guid.NewGuid(),
+            NewStatus = (int)QuestionStatus.InFocus,
+        });
+
+        await act.Should().ThrowAsync<InvalidOperationException>();
+    }
+
+    [Fact]
+    public async Task ToggleLikeAsync_Throws_WhenQuestionNotFound()
+    {
+        var repo = new QuestionRepository(DataContext, EmailSender, SmtpSettings, HtmlSanitizer);
+
+        Func<Task> act = async () => await repo.ToggleLikeAsync(Guid.NewGuid(), Guid.NewGuid());
+
+        await act.Should().ThrowAsync<InvalidOperationException>();
+    }
+
+    [Fact]
+    public async Task ToggleDislikeAsync_Throws_WhenQuestionNotFound()
+    {
+        var repo = new QuestionRepository(DataContext, EmailSender, SmtpSettings, HtmlSanitizer);
+
+        Func<Task> act = async () => await repo.ToggleDislikeAsync(Guid.NewGuid(), Guid.NewGuid());
 
         await act.Should().ThrowAsync<InvalidOperationException>();
     }
