@@ -7,7 +7,7 @@ namespace AskQuestion.BLL.Email
 {
     public class EmailBackgroundService : BackgroundService
     {
-        private readonly EmailSender _emailSender;
+        private readonly IEmailSender _emailSender;
         private readonly IEmailClientFactory _emailClientFactory;
         private readonly SmtpSettings _smtpSettings;
         private readonly ILogger<EmailBackgroundService> _logger;
@@ -18,7 +18,7 @@ namespace AskQuestion.BLL.Email
             IOptions<SmtpSettings> smtpSettings,
             ILogger<EmailBackgroundService> logger)
         {
-            _emailSender = (EmailSender)emailSender;
+            _emailSender = emailSender;
             _emailClientFactory = emailClientFactory;
             _smtpSettings = smtpSettings.Value;
             _logger = logger;
