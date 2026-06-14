@@ -47,10 +47,8 @@ namespace AskQuestion.WebApi.Controllers
                 Id = dto.Id,
                 FirstName = dto.FirstName,
                 LastName = dto.LastName,
-                Patronymic = dto.Patronymic,
                 Position = dto.Position,
                 Email = dto.Email,
-                AdditionalInfo = dto.AdditionalInfo,
                 Order = dto.Order,
                 IsActive = dto.IsActive,
             });
@@ -74,10 +72,8 @@ namespace AskQuestion.WebApi.Controllers
                 Id = speakerDto.Id,
                 FirstName = speakerDto.FirstName,
                 LastName = speakerDto.LastName,
-                Patronymic = speakerDto.Patronymic,
                 Position = speakerDto.Position,
                 Email = speakerDto.Email,
-                AdditionalInfo = speakerDto.AdditionalInfo,
                 Order = speakerDto.Order,
                 IsActive = speakerDto.IsActive,
             };
@@ -93,7 +89,6 @@ namespace AskQuestion.WebApi.Controllers
             {
                 FirstName = speakerCreateModel.FirstName,
                 LastName = speakerCreateModel.LastName,
-                Patronymic = speakerCreateModel.Patronymic,
                 Position = speakerCreateModel.Position,
                 Email = speakerCreateModel.Email,
                 Order = speakerCreateModel.Order,
@@ -106,10 +101,8 @@ namespace AskQuestion.WebApi.Controllers
                 Id = speakerCreatedDto.Id,
                 FirstName = speakerCreatedDto.FirstName,
                 LastName = speakerCreatedDto.LastName,
-                Patronymic = speakerCreatedDto.Patronymic,
                 Position = speakerCreatedDto.Position,
                 Email = speakerCreatedDto.Email,
-                AdditionalInfo = speakerCreatedDto.AdditionalInfo,
                 Order = speakerCreatedDto.Order,
                 GeneratedPassword = speakerCreatedDto.GeneratedPassword,
             };
@@ -126,10 +119,8 @@ namespace AskQuestion.WebApi.Controllers
                 Id = speakerUpdateModel.Id,
                 FirstName = speakerUpdateModel.FirstName,
                 LastName = speakerUpdateModel.LastName,
-                Patronymic = speakerUpdateModel.Patronymic,
                 Position = speakerUpdateModel.Position,
                 Email = speakerUpdateModel.Email,
-                AdditionalInfo = speakerUpdateModel.AdditionalInfo,
             };
 
             var speakerDto = await _speakerRepository.UpdateAsync(speakerUpdateDto);
@@ -139,10 +130,8 @@ namespace AskQuestion.WebApi.Controllers
                 Id = speakerDto.Id,
                 FirstName = speakerDto.FirstName,
                 LastName = speakerDto.LastName,
-                Patronymic = speakerDto.Patronymic,
                 Position = speakerDto.Position,
                 Email = speakerDto.Email,
-                AdditionalInfo = speakerDto.AdditionalInfo,
                 Order = speakerDto.Order,
                 IsActive = speakerDto.IsActive,
             };

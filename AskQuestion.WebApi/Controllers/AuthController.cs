@@ -65,7 +65,6 @@ namespace AskQuestion.WebApi.Controllers
                 Password = adminSetupModel.Password,
                 FirstName = adminSetupModel.FirstName,
                 LastName = adminSetupModel.LastName,
-                Patronymic = adminSetupModel.Patronymic,
             };
 
             UserDto userDto;
@@ -90,9 +89,7 @@ namespace AskQuestion.WebApi.Controllers
                     Id = userDto.UserDetails.Id,
                     FirstName = userDto.UserDetails.FirstName,
                     LastName = userDto.UserDetails.LastName,
-                    Patronymic = userDto.UserDetails.Patronymic,
                     Position = userDto.UserDetails.Position,
-                    AdditionalInfo = userDto.UserDetails.AdditionalInfo,
                     Created = userDto.UserDetails.Created,
                     Updated = userDto.UserDetails.Updated,
                 } : null,
@@ -163,9 +160,7 @@ namespace AskQuestion.WebApi.Controllers
                     Id = userDto.UserDetails.Id,
                     FirstName = userDto.UserDetails.FirstName,
                     LastName = userDto.UserDetails.LastName,
-                    Patronymic = userDto.UserDetails.Patronymic,
                     Position = userDto.UserDetails.Position,
-                    AdditionalInfo = userDto.UserDetails.AdditionalInfo,
                     Created = userDto.UserDetails.Created,
                     Updated = userDto.UserDetails.Updated,
                 } : null,
