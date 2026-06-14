@@ -17,5 +17,7 @@ namespace AskQuestion.WebApi.Models.Request.Speaker
         [Required(AllowEmptyStrings = false, ErrorMessage = "Почта спикера должна быть указана.")]
         [EmailAddress(ErrorMessage = "Почта должна быть валидна.")]
         public string Email { get; set; } = null!;
+
+        public int Order { get; set; }
     }
 }

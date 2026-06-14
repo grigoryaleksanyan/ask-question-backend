@@ -49,7 +49,7 @@ namespace AskQuestion.WebApi.Controllers
                 Position = dto.Position,
                 Email = dto.Email,
                 AdditionalInfo = dto.AdditionalInfo,
-
+                Order = dto.Order,
             });
 
             return Ok(result);
@@ -75,7 +75,7 @@ namespace AskQuestion.WebApi.Controllers
                 Position = speakerDto.Position,
                 Email = speakerDto.Email,
                 AdditionalInfo = speakerDto.AdditionalInfo,
-
+                Order = speakerDto.Order,
             };
 
             return Ok(result);
@@ -92,6 +92,7 @@ namespace AskQuestion.WebApi.Controllers
                 Patronymic = speakerCreateModel.Patronymic,
                 Position = speakerCreateModel.Position,
                 Email = speakerCreateModel.Email,
+                Order = speakerCreateModel.Order,
             };
 
             SpeakerCreatedDto speakerCreatedDto = await _speakerRepository.CreateAsync(speakerCreateDto);
@@ -105,7 +106,7 @@ namespace AskQuestion.WebApi.Controllers
                 Position = speakerCreatedDto.Position,
                 Email = speakerCreatedDto.Email,
                 AdditionalInfo = speakerCreatedDto.AdditionalInfo,
-
+                Order = speakerCreatedDto.Order,
                 GeneratedPassword = speakerCreatedDto.GeneratedPassword,
             };
 
@@ -138,6 +139,7 @@ namespace AskQuestion.WebApi.Controllers
                 Position = speakerDto.Position,
                 Email = speakerDto.Email,
                 AdditionalInfo = speakerDto.AdditionalInfo,
+                Order = speakerDto.Order,
             };
 
             return Ok(result);
@@ -148,6 +150,20 @@ namespace AskQuestion.WebApi.Controllers
         public async Task<IActionResult> Delete(Guid id)
         {
             await _speakerRepository.DeleteAsync(id);
+
+            return Ok();
+        }
+
+        [HttpPut("SetOrder")]
+        [Authorize(Roles = UserStringRoles.ADMINISTRATORS_ONLY)]
+        public async Task<IActionResult> SetOrder(Guid[] ids)
+        {
+            if (ids.Length == 0)
+            {
+                return BadRequest();
+            }
+
+            await _speakerRepository.SetOrderAsync(ids);
 
             return Ok();
         }
