@@ -17,6 +17,6 @@ namespace AskQuestion.BLL.Email
             return Task.CompletedTask;
         }
 
-        internal ChannelReader<EmailMessage> GetReader() => _channel.Reader;
+        public ChannelReader<EmailMessage> GetReader() => _channel.Reader;
     }
 }
